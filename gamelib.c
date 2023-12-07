@@ -14,10 +14,14 @@ static void sacrificaPunti(Giocatore *pGiocatore);
 static void cancellaGiocatori(Giocatore *pGiocatori);
 static void stampaGiocatori(unsigned short nGiocatori);
 static void generaMappa();
+static void inserisciZona();
 
 static void stampaMappa();
 
-int c = 0;                      // Variabile per pulizia buffer
+// Pulizia Buffer
+int c = 0;
+static void puliziaBuffer();
+
 unsigned short isImpostato = 0; // Variabile di controllo per notificare che il gioco è già stato impostato
 ZonaSegrete *pFirst = NULL;
 ZonaSegrete *pLast = NULL;
@@ -45,8 +49,7 @@ void impostaGioco()
     {
         printf("\033[1;37mInserisci il numero di giocatori (max 4)\033[1;0m\n");
         scanf("%hu", &nGiocatori);
-        while ((c = getchar()) != '\n' && c != EOF)
-            ;
+        puliziaBuffer();
         if (nGiocatori == 0 || nGiocatori > 4)
         {
             printf("\033[1;37mIl numero di giocatori va \033[1;31mda 1 a 4\033[0m.\n");
@@ -58,7 +61,36 @@ void impostaGioco()
     {
         creaGiocatore(&giocatori[i], i);
     }
-    generaMappa();
+
+    // Mappa
+    unsigned short sceltaMappa = 0;
+    do
+    {
+        printf("\033[1;37mGenerazione della mappa, \033[1;0m Scegli cosa fare:\n");
+        printf("> \033[1;36m1\033[0m: Genera Mappa.\n");
+        printf("> \033[1;35m2\033[0m: Inserisci Zona.\n");
+        printf("> \033[1;34m3\033[0m: Cancella Zona.\n");
+        printf("> \033[1;33m4\033[0m: Stampa Mappa.\n");
+        printf("> \033[1;31m4\033[0m: Chiudi.\n");
+        printf("\033[92mScelta:\033[0m ");
+        scanf("%hd", &sceltaMappa);
+        puliziaBuffer();
+        switch (sceltaMappa)
+        {
+        case 1:
+            generaMappa();
+            printf("La mappa è stata generata con 15 zone!");
+            break;
+        case 2:
+            inserisciZona();
+            break;
+        default:
+            printf("\033[1;31mAttenzione!\033[1;0m Inserisci un numero tra 1 e 5.\n");
+            break;
+        }
+
+    } while (sceltaMappa > 5 || sceltaMappa == 0);
+
     isImpostato = 1;
     return;
 }
@@ -87,8 +119,7 @@ static void sceltaClasse(Giocatore *pGiocatore)
     {
         printf("\nScegli Classe: ");
         scanf("%hu", &sceltaClasse);
-        while ((c = getchar()) != '\n' && c != EOF)
-            ;
+        puliziaBuffer();
         if (sceltaClasse < 1 || sceltaClasse > 4)
             printf("\n\033[31mAttenzione!\033[0m Classe non riconosciuta, inserisci un numero tra 1 e 4.");
     } while (sceltaClasse < 1 || sceltaClasse > 4);
@@ -143,14 +174,13 @@ static void sacrificaPunti(Giocatore *pGiocatore)
     printf("\n\033[37mInserisci qualsiasi altro numero per rifiutare...\033[1;0m\n");
     printf("Scelta: ");
     scanf("%hu", &scelta);
-    while ((c = getchar()) != '\n' && c != EOF)
-        ;
+    puliziaBuffer();
     switch (scelta)
     {
     case 1:
         pGiocatore->mente -= 1;
         pGiocatore->pVita += 1;
-        printf("\nAggiornamento classe giocatore:\033[1;35m Punti Mente: %d\033[1;0m - \033[1;32mPunti Vita: %d\033[1;0m.", pGiocatore->mente, pGiocatore->pVita);
+        printf("\nAggiornamento classe giocatore:\033[1;35m Punti Mente: %d\033[1;0m - \033[1;32mPunti Vita: %d\033[1;0m.\n", pGiocatore->mente, pGiocatore->pVita);
         break;
     case 2:
         pGiocatore->mente += 1;
@@ -201,7 +231,10 @@ static void generaMappa()
         ZonaSegrete *nuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
         nuovaZona->zonaPrecedente = NULL;
         nuovaZona->zonaSuccessiva = NULL;
-        nuovaZona->tipoZona = 3;
+        nuovaZona->tipoPorta = rand() % 3;
+        nuovaZona->tipoTesoro = rand() % 4;
+        nuovaZona->tipoZona = rand() % 10;
+
         // Primo Elemento della lista
         if (i == 0)
         {
@@ -215,9 +248,18 @@ static void generaMappa()
             pLast = nuovaZona;
         }
     }
-    printf("\nPuntatore alla prima zona: %p\n", (void *)pFirst);
-    printf("\nPuntatore all'ultima zona: %p\n", (void *)pLast);
+    /*printf("\nPuntatore alla prima zona: %p\n", (void *)pFirst);
+    printf("\nPuntatore all'ultima zona: %p\n", (void *)pLast);*/
     stampaMappa();
+}
+
+static void inserisciZona()
+{
+    unsigned short posizioneZona = 0;
+    printf("Inserisci la posizione in cui inserire la zona\n");
+    printf("\033[92mScelta:\033[0m ");
+    scanf("%hd", &posizioneZona);
+    puliziaBuffer();
 }
 
 static void stampaMappa()
@@ -238,4 +280,10 @@ static void stampaMappa()
             a++;
         } while (pScan != NULL);
     }
+}
+
+static void puliziaBuffer()
+{
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
 }
