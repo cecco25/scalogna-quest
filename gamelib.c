@@ -15,10 +15,12 @@ static void cancellaGiocatori(Giocatore *pGiocatori);
 static void stampaGiocatori(unsigned short nGiocatori);
 static void generaMappa();
 
+static void stampaMappa();
+
 int c = 0;                      // Variabile per pulizia buffer
 unsigned short isImpostato = 0; // Variabile di controllo per notificare che il gioco è già stato impostato
-ZonaSegrete *pFirst;
-ZonaSegrete *pLast;
+ZonaSegrete *pFirst = NULL;
+ZonaSegrete *pLast = NULL;
 
 void impostaGioco()
 {
@@ -129,7 +131,6 @@ static void assegnaValoriClasse(Giocatore *pGiocatore)
     default:
         break;
     }
-    // printf("\tClasse: %d\nAtk: %d\nDef: %d\nPV: %d\nMente: %d", pGiocatore->classeGiocatore, pGiocatore->dadiAttacco, pGiocatore->dadiDifesa, pGiocatore->pVita, pGiocatore->mente);
     sacrificaPunti(pGiocatore);
 }
 
@@ -188,9 +189,53 @@ static void cancellaGiocatori(Giocatore *pGiocatore)
         pGiocatore->dadiDifesa = 0;
         pGiocatore->pVita = 0;
         pGiocatore->mente = 0;
+        pGiocatore->valoreSpeciale = 0;
+        pGiocatore->classeGiocatore = -1;
     }
 }
 
 static void generaMappa()
 {
+    for (int i = 0; i < 15; i++)
+    {
+        ZonaSegrete *nuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
+        nuovaZona->zonaPrecedente = NULL;
+        nuovaZona->zonaSuccessiva = NULL;
+        nuovaZona->tipoZona = 3;
+        // Primo Elemento della lista
+        if (i == 0)
+        {
+            pFirst = nuovaZona;
+            pLast = nuovaZona;
+        }
+        else
+        {
+            pLast->zonaSuccessiva = nuovaZona;
+            nuovaZona->zonaPrecedente = pLast;
+            pLast = nuovaZona;
+        }
+    }
+    printf("\nPuntatore alla prima zona: %p\n", (void *)pFirst);
+    printf("\nPuntatore all'ultima zona: %p\n", (void *)pLast);
+    stampaMappa();
+}
+
+static void stampaMappa()
+{
+    // Stampa lista
+    if (pFirst == NULL)
+    {
+        printf("\nNon ci sono zone da stampare");
+    }
+    else
+    {
+        ZonaSegrete *pScan = pFirst;
+        int a = 0;
+        do
+        {
+            printf("\n%d) Zona: %d - Indirizzo: %p", a, pScan->tipoZona, pScan);
+            pScan = pScan->zonaSuccessiva;
+            a++;
+        } while (pScan != NULL);
+    }
 }
