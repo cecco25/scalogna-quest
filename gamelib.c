@@ -13,9 +13,13 @@ static void assegnaValoriClasse(Giocatore *pGiocatore); // Assegna i valori alla
 static void sacrificaPunti(Giocatore *pGiocatore);
 static void cancellaGiocatori(Giocatore *pGiocatori);
 static void stampaGiocatori(unsigned short nGiocatori);
+
+// Mappa
 static void generaMappa();
 static void inserisciZona();
-
+static void inserimentoinTesta();
+static void inserimentoInCoda();
+static void inserimentoInPoizione(unsigned short posizione);
 static void stampaMappa();
 
 // Pulizia Buffer
@@ -62,7 +66,7 @@ void impostaGioco()
         creaGiocatore(&giocatori[i], i);
     }
 
-    // Mappa
+    // Menu Mappa
     unsigned short sceltaMappa = 0;
     do
     {
@@ -260,6 +264,73 @@ static void inserisciZona()
     printf("\033[92mScelta:\033[0m ");
     scanf("%hd", &posizioneZona);
     puliziaBuffer();
+
+    // Inserisco in Testa
+    if (posizioneZona <= 0 || posizioneZona == 1)
+    {
+        inserimentoInTesta();
+    }
+    // Inserisco in Coda
+    else if (posizioneZona >= 15)
+    {
+        inserimentoInCoda();
+    }
+    else
+    {
+        inserimentoInPosizione(posizioneZona);
+    }
+}
+
+static void inserimentoInTesta()
+{
+    ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
+    pNuovaZona->zonaSuccessiva = NULL;
+    pNuovaZona->tipoPorta = rand() % 3;
+    pNuovaZona->tipoTesoro = rand() % 4;
+    pNuovaZona->tipoZona = rand() % 10;
+    if (pFirst == NULL)
+        pFirst = pNuovaZona;
+    else
+    {
+        pNuovaZona->zonaSuccessiva = pFirst;
+        pFirst = pNuovaZona;
+    }
+}
+
+static void inserimentoInCoda()
+{
+    ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
+    pNuovaZona->zonaSuccessiva = NULL;
+    pNuovaZona->tipoPorta = rand() % 3;
+    pNuovaZona->tipoTesoro = rand() % 4;
+    pNuovaZona->tipoZona = rand() % 10;
+    if (pFirst == NULL)
+    {
+        pFirst = pNuovaZona;
+        pLast = pNuovaZona;
+    }
+    else
+    {
+        pLast->zonaSuccessiva = pNuovaZona;
+        pLast = pNuovaZona;
+    }
+}
+
+static void inserimentoInPosizione(unsigned short posizione)
+{
+    if (pFirst == NULL)
+    {
+        inserimentoInTesta();
+    }
+    else
+    {
+        ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
+        pNuovaZona->tipoPorta = rand() % 3;
+        pNuovaZona->tipoTesoro = rand() % 4;
+        pNuovaZona->tipoZona = rand() % 10;
+        pNuovaZona->zonaSuccessiva = NULL;
+        
+    }
 }
 
 static void stampaMappa()
