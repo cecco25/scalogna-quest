@@ -17,9 +17,9 @@ static void stampaGiocatori(unsigned short nGiocatori);
 // Mappa
 static void generaMappa();
 static void inserisciZona();
-static void inserimentoinTesta();
+static void inserimentoInTesta();
 static void inserimentoInCoda();
-static void inserimentoInPoizione(unsigned short posizione);
+static void inserimentoInPosizione(unsigned short posizione);
 static void stampaMappa();
 
 // Pulizia Buffer
@@ -70,7 +70,7 @@ void impostaGioco()
     unsigned short sceltaMappa = 0;
     do
     {
-        printf("\033[1;37mGenerazione della mappa, \033[1;0m Scegli cosa fare:\n");
+        printf("\033[1;37mMenu della mappa, \033[1;0m Scegli cosa fare:\n");
         printf("> \033[1;36m1\033[0m: Genera Mappa.\n");
         printf("> \033[1;35m2\033[0m: Inserisci Zona.\n");
         printf("> \033[1;34m3\033[0m: Cancella Zona.\n");
@@ -83,17 +83,19 @@ void impostaGioco()
         {
         case 1:
             generaMappa();
-            printf("La mappa è stata generata con 15 zone!");
+            printf("La mappa è stata generata con 15 zone\n");
+            stampaMappa();
             break;
         case 2:
             inserisciZona();
+            stampaMappa();
             break;
         default:
             printf("\033[1;31mAttenzione!\033[1;0m Inserisci un numero tra 1 e 5.\n");
             break;
         }
 
-    } while (sceltaMappa > 5 || sceltaMappa == 0);
+    } while (sceltaMappa != 5);
 
     isImpostato = 1;
     return;
@@ -254,7 +256,7 @@ static void generaMappa()
     }
     /*printf("\nPuntatore alla prima zona: %p\n", (void *)pFirst);
     printf("\nPuntatore all'ultima zona: %p\n", (void *)pLast);*/
-    stampaMappa();
+    // stampaMappa();
 }
 
 static void inserisciZona()
@@ -269,21 +271,26 @@ static void inserisciZona()
     if (posizioneZona <= 0 || posizioneZona == 1)
     {
         inserimentoInTesta();
+        printf("\nHai inserito in testa\n");
     }
     // Inserisco in Coda
     else if (posizioneZona >= 15)
     {
         inserimentoInCoda();
+        printf("\nHai inserito in coda\n");
     }
+    // Inserisco in Posizione
     else
     {
         inserimentoInPosizione(posizioneZona);
+        printf("\nHai inserito in posizione %hu\n", posizioneZona);
     }
 }
 
 static void inserimentoInTesta()
 {
     ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
+    pNuovaZona->zonaPrecedente = NULL;
     pNuovaZona->zonaSuccessiva = NULL;
     pNuovaZona->tipoPorta = rand() % 3;
     pNuovaZona->tipoTesoro = rand() % 4;
@@ -293,6 +300,7 @@ static void inserimentoInTesta()
     else
     {
         pNuovaZona->zonaSuccessiva = pFirst;
+        pFirst->zonaPrecedente = pNuovaZona;
         pFirst = pNuovaZona;
     }
 }
@@ -300,6 +308,7 @@ static void inserimentoInTesta()
 static void inserimentoInCoda()
 {
     ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
+    pNuovaZona->zonaPrecedente = NULL;
     pNuovaZona->zonaSuccessiva = NULL;
     pNuovaZona->tipoPorta = rand() % 3;
     pNuovaZona->tipoTesoro = rand() % 4;
@@ -312,6 +321,7 @@ static void inserimentoInCoda()
     else
     {
         pLast->zonaSuccessiva = pNuovaZona;
+        pNuovaZona->zonaPrecedente = pLast;
         pLast = pNuovaZona;
     }
 }
@@ -329,7 +339,16 @@ static void inserimentoInPosizione(unsigned short posizione)
         pNuovaZona->tipoTesoro = rand() % 4;
         pNuovaZona->tipoZona = rand() % 10;
         pNuovaZona->zonaSuccessiva = NULL;
-        
+        pNuovaZona->zonaPrecedente = NULL;
+
+        unsigned short posizioneCorrente = 0;
+        while (pFirst->zonaSuccessiva != NULL && posizioneCorrente < posizione - 1)
+        {
+            pFirst = pFirst->zonaSuccessiva;
+            posizioneCorrente++;
+        }
+        pNuovaZona->zonaSuccessiva = pFirst->zonaSuccessiva;
+        pFirst->zonaSuccessiva = pNuovaZona;
     }
 }
 
@@ -338,7 +357,7 @@ static void stampaMappa()
     // Stampa lista
     if (pFirst == NULL)
     {
-        printf("\nNon ci sono zone da stampare");
+        printf("Non ci sono zone da stampare\n");
     }
     else
     {
@@ -346,7 +365,7 @@ static void stampaMappa()
         int a = 0;
         do
         {
-            printf("\n%d) Zona: %d - Indirizzo: %p", a, pScan->tipoZona, pScan);
+            printf("%d) Zona: %d - Indirizzo: %p - Prec: %p - Succ: %p\n", a + 1, pScan->tipoZona, pScan, pScan->zonaPrecedente, pScan->zonaSuccessiva);
             pScan = pScan->zonaSuccessiva;
             a++;
         } while (pScan != NULL);
