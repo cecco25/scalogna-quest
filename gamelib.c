@@ -16,6 +16,7 @@ static void stampaGiocatori(unsigned short nGiocatori);
 
 // Mappa
 static void generaMappa();
+static int dimensioneLista();
 static void inserisciZona();
 static void inserimentoInTesta();
 static void inserimentoInCoda();
@@ -70,12 +71,12 @@ void impostaGioco()
     unsigned short sceltaMappa = 0;
     do
     {
-        printf("\033[1;37mMenu della mappa, \033[1;0m Scegli cosa fare:\n");
+        printf("\n\033[1;37mMenu della mappa, \033[1;0m Scegli cosa fare:\n");
         printf("> \033[1;36m1\033[0m: Genera Mappa.\n");
         printf("> \033[1;35m2\033[0m: Inserisci Zona.\n");
         printf("> \033[1;34m3\033[0m: Cancella Zona.\n");
         printf("> \033[1;33m4\033[0m: Stampa Mappa.\n");
-        printf("> \033[1;31m4\033[0m: Chiudi.\n");
+        printf("> \033[1;31m5\033[0m: Chiudi.\n");
         printf("\033[92mScelta:\033[0m ");
         scanf("%hd", &sceltaMappa);
         puliziaBuffer();
@@ -254,9 +255,6 @@ static void generaMappa()
             pLast = nuovaZona;
         }
     }
-    /*printf("\nPuntatore alla prima zona: %p\n", (void *)pFirst);
-    printf("\nPuntatore all'ultima zona: %p\n", (void *)pLast);*/
-    // stampaMappa();
 }
 
 static void inserisciZona()
@@ -268,13 +266,13 @@ static void inserisciZona()
     puliziaBuffer();
 
     // Inserisco in Testa
-    if (posizioneZona <= 0 || posizioneZona == 1)
+    if (posizioneZona <= 1)
     {
         inserimentoInTesta();
         printf("\nHai inserito in testa\n");
     }
     // Inserisco in Coda
-    else if (posizioneZona >= 15)
+    else if (posizioneZona >= dimensioneLista())
     {
         inserimentoInCoda();
         printf("\nHai inserito in coda\n");
@@ -285,6 +283,18 @@ static void inserisciZona()
         inserimentoInPosizione(posizioneZona);
         printf("\nHai inserito in posizione %hu\n", posizioneZona);
     }
+}
+
+static int dimensioneLista()
+{
+    int size = 0;
+    ZonaSegrete *pScan = pFirst;
+    while (pScan != NULL)
+    {
+        pScan = pScan->zonaSuccessiva;
+        size++;
+    }
+    return size;
 }
 
 static void inserimentoInTesta()
@@ -341,14 +351,21 @@ static void inserimentoInPosizione(unsigned short posizione)
         pNuovaZona->zonaSuccessiva = NULL;
         pNuovaZona->zonaPrecedente = NULL;
 
+        ZonaSegrete *pTemp = pFirst;
         unsigned short posizioneCorrente = 0;
-        while (pFirst->zonaSuccessiva != NULL && posizioneCorrente < posizione - 1)
+        while (pTemp->zonaSuccessiva != NULL && posizioneCorrente < posizione - 1)
         {
-            pFirst = pFirst->zonaSuccessiva;
+            pTemp = pTemp->zonaSuccessiva;
             posizioneCorrente++;
         }
-        pNuovaZona->zonaSuccessiva = pFirst->zonaSuccessiva;
-        pFirst->zonaSuccessiva = pNuovaZona;
+        pNuovaZona->zonaSuccessiva = pTemp->zonaSuccessiva;
+        pNuovaZona->zonaPrecedente = pTemp;
+        if (pTemp->zonaSuccessiva != NULL)
+        {
+            pTemp->zonaSuccessiva->zonaPrecedente = pNuovaZona;
+        }
+
+        pTemp->zonaSuccessiva = pNuovaZona;
     }
 }
 
