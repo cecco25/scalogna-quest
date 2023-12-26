@@ -121,6 +121,20 @@ void impostaGioco()
     return;
 }
 
+void gioca()
+{
+    if (isImpostato == 1)
+    {
+        printf("\n\033[1;33mGioco impostato correttamente! Preparati a giocare...\033[0m\n");
+    }
+    else
+    {
+        printf("\033[1;31mAttenzione! Il gioco non è stato impostato correttamente!\033[1;0m\n");
+        return;
+    }
+    
+}
+
 static void creaGiocatore(Giocatore *pGiocatore, int i)
 {
     do

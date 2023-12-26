@@ -33,15 +33,12 @@ int main(void)
         case 1:
             impostaGioco();
             break;
-
         case 2:
-
+            gioca();
             break;
-
         case 3:
 
             break;
-
         default:
             printf("\033[31mAttenzione!\033[0m Opzione non valida, per favore inserisci \033[31mun numero da 1 a 3\033[0m.\n");
             break;

@@ -1,5 +1,6 @@
 
 void impostaGioco();
+void gioca();
 
 enum ClasseGiocatore
 {
