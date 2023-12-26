@@ -25,7 +25,9 @@ static void cancellaZona();
 static void cancellaInTesta();
 static void cancellaInCoda();
 static void cancellaInPosizione(unsigned short posizione);
+static void cancellaMappa();
 static void stampaMappa();
+static void chiudiMappa();
 
 // Conversione enum a testo
 static char *getTipoZona(enum TipoZona tipo);
@@ -56,6 +58,7 @@ void impostaGioco()
         for (i = 0; i < 4; i++)
         {
             cancellaGiocatori(&giocatori[i]);
+            cancellaMappa();
         }
     }
 
@@ -107,14 +110,14 @@ void impostaGioco()
         case 4:
             stampaMappa();
             break;
+        case 5:
+            chiudiMappa();
+            break;
         default:
             printf("\033[1;31mAttenzione!\033[1;0m Inserisci un numero tra 1 e 5.\n");
             break;
         }
-
-    } while (sceltaMappa != 5);
-
-    isImpostato = 1;
+    } while (sceltaMappa != 5 || isImpostato == 0);
     return;
 }
 
@@ -473,6 +476,19 @@ static void cancellaInPosizione(unsigned short posizione)
     free(zonaDaCancellare);
 }
 
+static void cancellaMappa()
+{
+    ZonaSegrete *pScan = pFirst;
+    ZonaSegrete *succ;
+    while (pScan != NULL)
+    {
+        succ = pScan->zonaSuccessiva;
+        free(pScan);
+        pScan = succ;
+    }
+    pFirst = NULL;
+}
+
 static void stampaMappa()
 {
     // Stampa lista
@@ -487,10 +503,23 @@ static void stampaMappa()
         do
         {
             // printf("%d) Zona: %d - Indirizzo: %p - Prec: %p - Succ: %p\n", a, pScan->tipoZona, pScan, pScan->zonaPrecedente, pScan->zonaSuccessiva);
-            printf("Zona %d) Tipo Zona: %s / %d - Tipo Tesoro: %s - Tipo Porta: %s\n", a, getTipoZona(pScan->tipoZona), pScan->tipoZona, getTipoTesoro(pScan->tipoTesoro), getTipoPorta(pScan->tipoPorta));
+            printf("Zona %d) \033[1;37mTipo Zona\033[1;0m: %s - \033[1;37mTipo Tesoro\033[1;0m: %s - \033[1;37mTipo Porta\033[1;0m: %s\n", a, getTipoZona(pScan->tipoZona), getTipoTesoro(pScan->tipoTesoro), getTipoPorta(pScan->tipoPorta));
             pScan = pScan->zonaSuccessiva;
             a++;
         } while (pScan != NULL);
+    }
+}
+
+static void chiudiMappa()
+{
+    if (dimensioneLista() >= 15)
+    {
+        isImpostato = 1;
+        printf("\033[1;37mFine Creazione Mappa.\033[1;0m\n");
+    }
+    else
+    {
+        printf("\033[1;31mAttenzione! Controlla di aver generato almeno 15 zone della mappa!\033[1;0m\n");
     }
 }
 
