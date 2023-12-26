@@ -58,8 +58,8 @@ void impostaGioco()
         for (i = 0; i < 4; i++)
         {
             cancellaGiocatori(&giocatori[i]);
-            cancellaMappa();
         }
+        cancellaMappa();
     }
 
     do
@@ -132,7 +132,17 @@ void gioca()
         printf("\033[1;31mAttenzione! Il gioco non è stato impostato correttamente!\033[1;0m\n");
         return;
     }
-    
+}
+
+void terminaGioco()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        cancellaGiocatori(&giocatori[i]);
+    }
+    cancellaMappa();
+
+    printf("\nGrazie per aver giocato a \033[1;33mScalogna-Quest\033[0m, alla prossima!\n");
 }
 
 static void creaGiocatore(Giocatore *pGiocatore, int i)
