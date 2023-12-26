@@ -21,7 +21,16 @@ static void inserisciZona();
 static void inserimentoInTesta();
 static void inserimentoInCoda();
 static void inserimentoInPosizione(unsigned short posizione);
+static void cancellaZona();
+static void cancellaInTesta();
+static void cancellaInCoda();
+static void cancellaInPosizione(unsigned short posizione);
 static void stampaMappa();
+
+// Conversione enum a testo
+static char *getTipoZona(enum TipoZona tipo);
+static char *getTipoTesoro(enum TipoTesoro tipo);
+static char *getTipoPorta(enum TipoPorta tipo);
 
 // Pulizia Buffer
 int c = 0;
@@ -89,6 +98,13 @@ void impostaGioco()
             break;
         case 2:
             inserisciZona();
+            stampaMappa();
+            break;
+        case 3:
+            cancellaZona();
+            stampaMappa();
+            break;
+        case 4:
             stampaMappa();
             break;
         default:
@@ -240,7 +256,7 @@ static void generaMappa()
         nuovaZona->zonaSuccessiva = NULL;
         nuovaZona->tipoPorta = rand() % 3;
         nuovaZona->tipoTesoro = rand() % 4;
-        nuovaZona->tipoZona = rand() % 10;
+        nuovaZona->tipoZona = rand() % 9;
 
         // Primo Elemento della lista
         if (i == 0)
@@ -255,6 +271,18 @@ static void generaMappa()
             pLast = nuovaZona;
         }
     }
+}
+
+static int dimensioneLista()
+{
+    int size = 0;
+    ZonaSegrete *pScan = pFirst;
+    while (pScan != NULL)
+    {
+        pScan = pScan->zonaSuccessiva;
+        size++;
+    }
+    return size;
 }
 
 static void inserisciZona()
@@ -285,18 +313,6 @@ static void inserisciZona()
     }
 }
 
-static int dimensioneLista()
-{
-    int size = 0;
-    ZonaSegrete *pScan = pFirst;
-    while (pScan != NULL)
-    {
-        pScan = pScan->zonaSuccessiva;
-        size++;
-    }
-    return size;
-}
-
 static void inserimentoInTesta()
 {
     ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
@@ -304,7 +320,7 @@ static void inserimentoInTesta()
     pNuovaZona->zonaSuccessiva = NULL;
     pNuovaZona->tipoPorta = rand() % 3;
     pNuovaZona->tipoTesoro = rand() % 4;
-    pNuovaZona->tipoZona = rand() % 10;
+    pNuovaZona->tipoZona = rand() % 9;
     if (pFirst == NULL)
         pFirst = pNuovaZona;
     else
@@ -322,17 +338,21 @@ static void inserimentoInCoda()
     pNuovaZona->zonaSuccessiva = NULL;
     pNuovaZona->tipoPorta = rand() % 3;
     pNuovaZona->tipoTesoro = rand() % 4;
-    pNuovaZona->tipoZona = rand() % 10;
-    if (pFirst == NULL)
+    pNuovaZona->tipoZona = rand() % 9;
+    ZonaSegrete *temp = pFirst;
+    if (temp == NULL)
     {
         pFirst = pNuovaZona;
-        pLast = pNuovaZona;
+        return;
     }
     else
     {
-        pLast->zonaSuccessiva = pNuovaZona;
-        pNuovaZona->zonaPrecedente = pLast;
-        pLast = pNuovaZona;
+        while (temp->zonaSuccessiva != NULL)
+        {
+            temp = temp->zonaSuccessiva;
+        }
+        temp->zonaSuccessiva = pNuovaZona;
+        pNuovaZona->zonaPrecedente = temp;
     }
 }
 
@@ -347,7 +367,7 @@ static void inserimentoInPosizione(unsigned short posizione)
         ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
         pNuovaZona->tipoPorta = rand() % 3;
         pNuovaZona->tipoTesoro = rand() % 4;
-        pNuovaZona->tipoZona = rand() % 10;
+        pNuovaZona->tipoZona = rand() % 9;
         pNuovaZona->zonaSuccessiva = NULL;
         pNuovaZona->zonaPrecedente = NULL;
 
@@ -369,6 +389,90 @@ static void inserimentoInPosizione(unsigned short posizione)
     }
 }
 
+static void cancellaZona()
+{
+    unsigned short posizioneZona = 0;
+    printf("Inserisci la posizione della zona da eliminare\n");
+    printf("\033[92mScelta:\033[0m ");
+    scanf("%hd", &posizioneZona);
+    puliziaBuffer();
+
+    if (posizioneZona <= 1)
+    {
+        cancellaInTesta();
+    }
+    else if (posizioneZona >= dimensioneLista())
+    {
+        cancellaInCoda();
+    }
+    else
+    {
+        cancellaInPosizione(posizioneZona);
+    }
+}
+
+static void cancellaInTesta()
+{
+    ZonaSegrete *temp = pFirst;
+    pFirst = temp->zonaSuccessiva;
+    if (pFirst != NULL)
+    {
+        pFirst->zonaPrecedente = NULL;
+    }
+    free(temp);
+    return;
+}
+
+static void cancellaInCoda()
+{
+    if (pFirst == NULL)
+    {
+        printf("\033[1;31mAttenzione!\033[1;0m La mappa è vuota.\n");
+        return;
+    }
+
+    ZonaSegrete *temp = pFirst;
+    while (temp->zonaSuccessiva != NULL)
+    {
+        temp = temp->zonaSuccessiva;
+    }
+
+    if (temp->zonaPrecedente != NULL)
+    {
+        temp->zonaPrecedente->zonaSuccessiva = NULL;
+    }
+    else
+    {
+        pFirst = NULL;
+    }
+    free(temp);
+}
+
+static void cancellaInPosizione(unsigned short posizione)
+{
+    if (pFirst == NULL)
+    {
+        printf("\033[1;31mAttenzione!\033[1;0m La mappa è vuota.\n");
+        return;
+    }
+
+    ZonaSegrete *temp = pFirst;
+
+    int i;
+    for (i = 0; temp != NULL && i < posizione - 1; i++)
+    {
+        temp = temp->zonaSuccessiva;
+    }
+
+    ZonaSegrete *zonaDaCancellare = temp->zonaSuccessiva;
+    temp->zonaSuccessiva = zonaDaCancellare->zonaSuccessiva;
+    if (zonaDaCancellare->zonaSuccessiva != NULL)
+    {
+        zonaDaCancellare->zonaSuccessiva->zonaPrecedente = temp;
+    }
+    free(zonaDaCancellare);
+}
+
 static void stampaMappa()
 {
     // Stampa lista
@@ -382,10 +486,70 @@ static void stampaMappa()
         int a = 0;
         do
         {
-            printf("%d) Zona: %d - Indirizzo: %p - Prec: %p - Succ: %p\n", a + 1, pScan->tipoZona, pScan, pScan->zonaPrecedente, pScan->zonaSuccessiva);
+            // printf("%d) Zona: %d - Indirizzo: %p - Prec: %p - Succ: %p\n", a, pScan->tipoZona, pScan, pScan->zonaPrecedente, pScan->zonaSuccessiva);
+            printf("Zona %d) Tipo Zona: %s / %d - Tipo Tesoro: %s - Tipo Porta: %s\n", a, getTipoZona(pScan->tipoZona), pScan->tipoZona, getTipoTesoro(pScan->tipoTesoro), getTipoPorta(pScan->tipoPorta));
             pScan = pScan->zonaSuccessiva;
             a++;
         } while (pScan != NULL);
+    }
+}
+
+static char *getTipoZona(enum TipoZona tipo)
+{
+    switch (tipo)
+    {
+    case CORRIDIO:
+        return "Corridoio";
+    case SCALA:
+        return "Scala";
+    case SALA_BANCHETTO:
+        return "Sala Banchetto";
+    case MAGAZZINO:
+        return "Magazzino";
+    case POSTO_GUARDIA:
+        return "Posto Guardia";
+    case PRIGIONE:
+        return "Prigione";
+    case CUCINA:
+        return "Cucina";
+    case ARMERIA:
+        return "Armeria";
+    case TEMPIO:
+        return "Tempio";
+    default:
+        return "0";
+    }
+}
+
+static char *getTipoTesoro(enum TipoTesoro tipo)
+{
+    switch (tipo)
+    {
+    case NESSUN_TESORO:
+        return "Nessun Tesoro";
+    case VELENO:
+        return "Veleno";
+    case GUARIGIONE:
+        return "Guarigione";
+    case DOPPIA_GUARIGIONE:
+        return "Doppia Guarigione";
+    default:
+        return "0";
+    }
+}
+
+static char *getTipoPorta(enum TipoPorta tipo)
+{
+    switch (tipo)
+    {
+    case NESSUNA_PORTA:
+        return "Nessuna Porta";
+    case PORTA_NORMALE:
+        return "Porta Normale";
+    case PORTA_DA_SCASSINARE:
+        return "Porta da Scassinare";
+    default:
+        return "0";
     }
 }
 
