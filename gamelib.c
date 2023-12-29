@@ -183,10 +183,10 @@ static void sceltaClasse(Giocatore *pGiocatore)
 {
     unsigned short sceltaClasse = 0;
     printf("\nScegli la \033[1;37mclasse\033[1;0m del tuo giocatore (il valore mente viene deciso casualmente tra quei due valori):");
-    printf("\n> \033[1;33m1) BARBARO\033[1;0m: \033[1;31m3 dadi attacco\033[1;0m - \033[1;34m2 dadi difesa\033[1;0m - \033[1;32m8 punti vita\033[1;0m - \033[1;35m1 o 2 mente\033[1;0m");
-    printf("\n> \033[1;36m2) NANO\033[1;0m: \033[1;31m2 dadi attacco\033[1;0m - \033[1;34m2 dadi difesa\033[1;0m - \033[1;32m7 punti vita\033[1;0m - \033[1;35m2 o 3 mente\033[1;0m");
-    printf("\n> \033[1;32m3) ELFO\033[1;0m: \033[1;31m2 dadi attacco\033[1;0m - \033[1;34m2 dadi difesa\033[1;0m - \033[1;32m6 punti vita\033[1;0m - \033[1;35m3 o 4 mente\033[1;0m");
-    printf("\n> \033[1;35m4) MAGO\033[1;0m: \033[1;31m1 dado attacco\033[1;0m - \033[1;34m2 dadi difesa\033[1;0m - \033[1;32m4 punti vita\033[1;0m -  \033[1;35m4 o 5 mente\033[1;0m");
+    printf("\n> \033[1;33m1) BARBARO\033[1;0m: \033[1;31m3 dadi attacco\033[1;0m - \033[1;36m2 dadi difesa\033[1;0m - \033[1;32m8 punti vita\033[1;0m - \033[1;35m1 o 2 mente\033[1;0m - \033[1;34m0 Potere Speciale\033[1;0m");
+    printf("\n> \033[1;36m2) NANO\033[1;0m: \033[1;31m2 dadi attacco\033[1;0m - \033[1;36m2 dadi difesa\033[1;0m - \033[1;32m7 punti vita\033[1;0m - \033[1;35m2 o 3 mente\033[1;0m - \033[1;34m1 Potere Speciale\033[1;0m");
+    printf("\n> \033[1;32m3) ELFO\033[1;0m: \033[1;31m2 dadi attacco\033[1;0m - \033[1;36m2 dadi difesa\033[1;0m - \033[1;32m6 punti vita\033[1;0m - \033[1;35m3 o 4 mente\033[1;0m - \033[1;34m1 Potere Speciale\033[1;0m");
+    printf("\n> \033[1;35m4) MAGO\033[1;0m: \033[1;31m1 dado attacco\033[1;0m - \033[1;36m2 dadi difesa\033[1;0m - \033[1;32m4 punti vita\033[1;0m -  \033[1;35m4 o 5 mente\033[1;0m - \033[1;34m3 Potere Speciale\033[1;0m");
     do
     {
         printf("\nScegli Classe: ");
@@ -207,28 +207,28 @@ static void assegnaValoriClasse(Giocatore *pGiocatore)
         pGiocatore->dadiAttacco = 3;
         pGiocatore->dadiDifesa = 2;
         pGiocatore->pVita = 8;
-        pGiocatore->valoreSpeciale = 0;
+        pGiocatore->potereSpeciale = 0;
         pGiocatore->mente = rand() % 2 + 1;
         break;
     case 1: // NANO
         pGiocatore->dadiAttacco = 2;
         pGiocatore->dadiDifesa = 2;
         pGiocatore->pVita = 7;
-        pGiocatore->valoreSpeciale = 1;
+        pGiocatore->potereSpeciale = 1;
         pGiocatore->mente = rand() % 3 + 2;
         break;
     case 2: // ELFO
         pGiocatore->dadiAttacco = 2;
         pGiocatore->dadiDifesa = 2;
         pGiocatore->pVita = 6;
-        pGiocatore->valoreSpeciale = 1;
+        pGiocatore->potereSpeciale = 1;
         pGiocatore->mente = rand() % 4 + 3;
         break;
     case 3: // MAGO
         pGiocatore->dadiAttacco = 1;
         pGiocatore->dadiDifesa = 2;
         pGiocatore->pVita = 4;
-        pGiocatore->valoreSpeciale = 3;
+        pGiocatore->potereSpeciale = 3;
         pGiocatore->mente = rand() % 5 + 4;
         break;
     default:
@@ -273,7 +273,7 @@ static void stampaGiocatore(Giocatore *pGiocatore)
     printf("\033[1;31mAtk\033[1;0m: %d\n", pGiocatore->dadiAttacco);
     printf("\033[1;36mDef\033[1;0m: %d\n", pGiocatore->dadiDifesa);
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pGiocatore->pVita);
-    printf("\033[1;37mValore Speciale\033[1;0m: %d\n", pGiocatore->valoreSpeciale);
+    printf("\033[1;34mPotere Speciale\033[1;0m: %d\n", pGiocatore->potereSpeciale);
     printf("\033[1;35mMente\033[1;0m: %d\n", pGiocatore->mente);
 }
 
@@ -286,7 +286,7 @@ static void cancellaGiocatori(Giocatore *pGiocatore)
         pGiocatore->dadiDifesa = 0;
         pGiocatore->pVita = 0;
         pGiocatore->mente = 0;
-        pGiocatore->valoreSpeciale = 0;
+        pGiocatore->potereSpeciale = 0;
         pGiocatore->classeGiocatore = -1;
     }
 }

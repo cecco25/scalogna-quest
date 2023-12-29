@@ -58,7 +58,7 @@ typedef struct Giocatore
     unsigned char dadiAttacco;
     unsigned char dadiDifesa;
     unsigned char mente;
-    unsigned char valoreSpeciale;
+    unsigned char potereSpeciale;
 
 } Giocatore;
 
