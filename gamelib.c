@@ -29,6 +29,9 @@ static void cancellaMappa();
 static void stampaMappa();
 static void chiudiMappa();
 
+// Gioca
+static void mescolaGiocatori();
+
 // Conversione enum a testo
 static char *getTipoZona(enum TipoZona tipo);
 static char *getTipoTesoro(enum TipoTesoro tipo);
@@ -38,7 +41,8 @@ static char *getTipoPorta(enum TipoPorta tipo);
 int c = 0;
 static void puliziaBuffer();
 
-unsigned short isImpostato = 0; // Variabile di controllo per notificare che il gioco è già stato impostato
+unsigned short isImpostato = 0; // Controlla se il gioco è già stato impostato
+unsigned short nGiocatori = 0;
 ZonaSegrete *pFirst = NULL;
 ZonaSegrete *pLast = NULL;
 
@@ -46,8 +50,6 @@ void impostaGioco()
 {
     time_t tempo;
     srand((unsigned)time(&tempo));
-
-    unsigned short nGiocatori = 0;
 
     if (isImpostato == 1)
     {
@@ -126,6 +128,8 @@ void gioca()
     if (isImpostato == 1)
     {
         printf("\n\033[1;33mGioco impostato correttamente! Preparati a giocare...\033[0m\n");
+        int turno = 1;
+        mescolaGiocatori();
     }
     else
     {
@@ -603,6 +607,17 @@ static char *getTipoPorta(enum TipoPorta tipo)
         return "Porta da Scassinare";
     default:
         return "0";
+    }
+}
+
+static void mescolaGiocatori()
+{
+    for (int i = nGiocatori - 1; i > 0; i--)
+    {
+        int j = rand() % (i + 1);
+        Giocatore temp = giocatori[i];
+        giocatori[i] = giocatori[j];
+        giocatori[j] = temp;
     }
 }
 

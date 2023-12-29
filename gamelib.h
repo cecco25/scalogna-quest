@@ -61,3 +61,11 @@ typedef struct Giocatore
     unsigned char valoreSpeciale;
 
 } Giocatore;
+
+typedef struct AbitanteDelleSegrete
+{
+    char nome[40];
+    unsigned char pVita;
+    unsigned char dadiAttacco;
+    unsigned char dadiDifesa;
+} AbitanteDelleSegrete;
