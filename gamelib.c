@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 Giocatore giocatori[4];
 
@@ -12,7 +13,7 @@ static void sceltaClasse(Giocatore *pGiocatore);
 static void assegnaValoriClasse(Giocatore *pGiocatore); // Assegna i valori alla classe del giocatore
 static void sacrificaPunti(Giocatore *pGiocatore);
 static void cancellaGiocatori(Giocatore *pGiocatori);
-static void stampaGiocatori(unsigned short nGiocatori);
+static void stampaGiocatore(Giocatore *pGiocatore);
 
 // Mappa
 static void generaMappa();
@@ -30,12 +31,15 @@ static void stampaMappa();
 static void chiudiMappa();
 
 // Gioca
+static void posizionaGiocatore(Giocatore *pGiocatore);
 static void mescolaGiocatori();
+static void turno(Giocatore *pGiocatore);
 
 // Conversione enum a testo
 static char *getTipoZona(enum TipoZona tipo);
 static char *getTipoTesoro(enum TipoTesoro tipo);
 static char *getTipoPorta(enum TipoPorta tipo);
+static char *getClasseGiocatore(enum ClasseGiocatore classe);
 
 // Pulizia Buffer
 int c = 0;
@@ -43,6 +47,7 @@ static void puliziaBuffer();
 
 unsigned short isImpostato = 0; // Controlla se il gioco è già stato impostato
 unsigned short nGiocatori = 0;
+
 ZonaSegrete *pFirst = NULL;
 ZonaSegrete *pLast = NULL;
 
@@ -80,7 +85,6 @@ void impostaGioco()
     {
         creaGiocatore(&giocatori[i], i);
     }
-
     // Menu Mappa
     unsigned short sceltaMappa = 0;
     do
@@ -120,6 +124,11 @@ void impostaGioco()
             break;
         }
     } while (sceltaMappa != 5 || isImpostato == 0);
+    for (int i = 0; i < nGiocatori; i++)
+    {
+        posizionaGiocatore(&giocatori[i]);
+    }
+
     return;
 }
 
@@ -128,8 +137,16 @@ void gioca()
     if (isImpostato == 1)
     {
         printf("\n\033[1;33mGioco impostato correttamente! Preparati a giocare...\033[0m\n");
-        int turno = 1;
-        mescolaGiocatori();
+        unsigned short nTurno = 1;
+        unsigned short fineGioco = 0;
+        while (fineGioco != 1)
+        {
+            mescolaGiocatori();
+            for (int i = 0; i < nGiocatori; i++)
+            {
+                turno(&giocatori[i]);
+            }
+        }
     }
     else
     {
@@ -154,7 +171,8 @@ static void creaGiocatore(Giocatore *pGiocatore, int i)
     do
     {
         printf("\n\033[1;37mInserisci il nickname del giocatore n. %d\033[1;0m: ", i + 1); // Input del nome del giocatore
-        fgets(pGiocatore->nomeGiocatore, 10, stdin);
+        fgets(pGiocatore->nomeGiocatore, 40, stdin);
+        // puliziaBuffer();
         if (strcmp(pGiocatore->nomeGiocatore, "") == 0)
             printf("\n\033[31mAttenzione!\033[0m Inserisci un nome valido.");
     } while (strcmp(pGiocatore->nomeGiocatore, "") == 0);
@@ -216,6 +234,7 @@ static void assegnaValoriClasse(Giocatore *pGiocatore)
     default:
         break;
     }
+    stampaGiocatore(pGiocatore);
     sacrificaPunti(pGiocatore);
 }
 
@@ -223,8 +242,8 @@ static void sacrificaPunti(Giocatore *pGiocatore)
 {
     unsigned short scelta = 0;
     printf("\n\033[1;37mScegli se sacrificare dei punti oppure no\033[1;0m");
-    printf("\n> 1)\033[1;31m -1 Mente\033[1;0m \033[1;32m+1 Punti Vita\033[1;0m");
-    printf("\n> 2)\033[1;32m +1 Mente\033[1;0m \033[1;31m-1 Punti Vita\033[1;0m");
+    printf("\n> 1)\033[1;35m -1 Mente\033[1;0m \033[1;32m+1 Punti Vita\033[1;0m");
+    printf("\n> 2)\033[1;35m +1 Mente\033[1;0m \033[1;32m-1 Punti Vita\033[1;0m");
     printf("\n\033[37mInserisci qualsiasi altro numero per rifiutare...\033[1;0m\n");
     printf("Scelta: ");
     scanf("%hu", &scelta);
@@ -239,29 +258,23 @@ static void sacrificaPunti(Giocatore *pGiocatore)
     case 2:
         pGiocatore->mente += 1;
         pGiocatore->pVita -= 1;
-        printf("\nAggiornamento classe giocatore:\033[1;35m Punti Mente: %d\033[1;0m - \033[1;32mPunti Vita: %d\033[1;0m.", pGiocatore->mente, pGiocatore->pVita);
+        printf("\nAggiornamento classe giocatore:\033[1;35m Punti Mente: %d\033[1;0m - \033[1;32mPunti Vita: %d\033[1;0m.\n", pGiocatore->mente, pGiocatore->pVita);
         break;
     default:
-        printf("\n\033[1;37mNotifica\033[1;0m:Hai rifiutato di sacrificare i punti.");
+        printf("\n\033[1;37mNotifica\033[1;0m:Hai rifiutato di sacrificare i punti.\n");
         break;
     }
 }
 
-static void stampaGiocatori(unsigned short nGiocatori)
+static void stampaGiocatore(Giocatore *pGiocatore)
 {
-    int i = 0;
-    for (i = 0; i < nGiocatori; i++)
-    {
-        Giocatore *pGiocatore = &giocatori[i];
-        printf("\nGiocatore Numero %d\n", (i + 1));
-        printf("\tNickname: %s\n", pGiocatore->nomeGiocatore);
-        printf("\tClasse: %d\n", pGiocatore->classeGiocatore);
-        printf("\tAtk: %d\n", pGiocatore->dadiAttacco);
-        printf("\tDef: %d\n", pGiocatore->dadiDifesa);
-        printf("\tPV: %d\n", pGiocatore->pVita);
-        printf("\tValore Speciale: %d\n", pGiocatore->valoreSpeciale);
-        printf("\tMente: %d\n", pGiocatore->mente);
-    }
+    printf("\n\033[1;37mNickname\033[1;0m: %s", pGiocatore->nomeGiocatore);
+    printf("\033[1;33mClasse\033[1;0m: %s\n", getClasseGiocatore(pGiocatore->classeGiocatore));
+    printf("\033[1;31mAtk\033[1;0m: %d\n", pGiocatore->dadiAttacco);
+    printf("\033[1;36mDef\033[1;0m: %d\n", pGiocatore->dadiDifesa);
+    printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pGiocatore->pVita);
+    printf("\033[1;37mValore Speciale\033[1;0m: %d\n", pGiocatore->valoreSpeciale);
+    printf("\033[1;35mMente\033[1;0m: %d\n", pGiocatore->mente);
 }
 
 static void cancellaGiocatori(Giocatore *pGiocatore)
@@ -610,6 +623,28 @@ static char *getTipoPorta(enum TipoPorta tipo)
     }
 }
 
+static char *getClasseGiocatore(enum ClasseGiocatore classe)
+{
+    switch (classe)
+    {
+    case BARBARO:
+        return "Barbaro";
+    case ELFO:
+        return "Elfo";
+    case NANO:
+        return "Nano";
+    case MAGO:
+        return "Mago";
+    default:
+        return "0";
+    }
+}
+
+static void posizionaGiocatore(Giocatore *pGiocatore)
+{
+    pGiocatore->posizione = pFirst;
+}
+
 static void mescolaGiocatori()
 {
     for (int i = nGiocatori - 1; i > 0; i--)
@@ -619,6 +654,45 @@ static void mescolaGiocatori()
         giocatori[i] = giocatori[j];
         giocatori[j] = temp;
     }
+}
+
+static void turno(Giocatore *pGiocatore)
+{
+    printf("\nE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
+    unsigned short sceltaTurno = 0;
+    do
+    {
+        printf("\n\033[1;37mScegli cosa fare\033[1;0m:\n");
+        printf("> \033[1;36m1\033[0m: Avanza.\n");
+        printf("> \033[1;35m2\033[0m: Indietreggia.\n");
+        printf("> \033[1;34m3\033[0m: Stampa Giocatore.\n");
+        printf("> \033[1;33m4\033[0m: Stampa Zona.\n");
+        printf("> \033[1;31m5\033[0m: Chiudi.\n");
+        printf("\033[92mScelta:\033[0m ");
+        scanf("%hd", &sceltaTurno);
+        puliziaBuffer();
+        switch (sceltaTurno)
+        {
+        case 1:
+
+            break;
+        case 2:
+
+            break;
+        case 3:
+
+            break;
+        case 4:
+
+            break;
+        case 5:
+
+            break;
+        default:
+            printf("\033[1;31mAttenzione!\033[1;0m Inserisci un numero tra 1 e 5.\n");
+            break;
+        }
+    } while (sceltaTurno != 5);
 }
 
 static void puliziaBuffer()
