@@ -34,6 +34,9 @@ static void chiudiMappa();
 static void posizionaGiocatore(Giocatore *pGiocatore);
 static void mescolaGiocatori();
 static void turno(Giocatore *pGiocatore);
+static void avanza(Giocatore *pGioatore);
+static AbitanteDelleSegrete *creaAbitanteSegrete();
+static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
 
 // Conversione enum a testo
 static char *getTipoZona(enum TipoZona tipo);
@@ -47,6 +50,7 @@ static void puliziaBuffer();
 
 unsigned short isImpostato = 0; // Controlla se il gioco è già stato impostato
 unsigned short nGiocatori = 0;
+unsigned short nTurno = 0;
 
 ZonaSegrete *pFirst = NULL;
 ZonaSegrete *pLast = NULL;
@@ -137,7 +141,7 @@ void gioca()
     if (isImpostato == 1)
     {
         printf("\n\033[1;33mGioco impostato correttamente! Preparati a giocare...\033[0m\n");
-        unsigned short nTurno = 1;
+        nTurno = 1;
         unsigned short fineGioco = 0;
         while (fineGioco != 1)
         {
@@ -674,13 +678,13 @@ static void turno(Giocatore *pGiocatore)
         switch (sceltaTurno)
         {
         case 1:
-
+            avanza(pGiocatore);
             break;
         case 2:
 
             break;
         case 3:
-
+            stampaGiocatore(pGiocatore);
             break;
         case 4:
 
@@ -693,6 +697,67 @@ static void turno(Giocatore *pGiocatore)
             break;
         }
     } while (sceltaTurno != 5);
+}
+
+static void avanza(Giocatore *pGiocatore)
+{
+    unsigned short spawnAbitante = 0;
+    if (pGiocatore->posizione->zonaSuccessiva == NULL)
+    {
+        AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
+        stampaAbitante(abitante);
+        spawnAbitante = 1;
+    }
+
+    enum TipoPorta porta = pGiocatore->posizione->zonaSuccessiva->tipoPorta;
+
+    if (porta == PORTA_DA_SCASSINARE || porta == PORTA_NORMALE)
+    {
+        printf("\n\033[1;37mPer avanzare devi prima aprire la porta!\n");
+        return;
+    }
+}
+
+static AbitanteDelleSegrete *creaAbitanteSegrete()
+{
+    char nomeAbitante[15][15] = {"Azuril",
+                                 "Dovarius",
+                                 "Drakorin",
+                                 "Elariana",
+                                 "Grimbold",
+                                 "Lysandra",
+                                 "Morvain",
+                                 "Mystralor",
+                                 "Seraphina",
+                                 "Sylvarith",
+                                 "Thaladon",
+                                 "Valdoril",
+                                 "Vexaria",
+                                 "Xylenor",
+                                 "Zythoril"};
+
+    AbitanteDelleSegrete *abitante = (AbitanteDelleSegrete *)malloc(sizeof(AbitanteDelleSegrete));
+
+    // Generazione casuale nome
+    strcpy(abitante->nome, nomeAbitante[rand() % 15]);
+
+    // Generazione dadi e pv in base al turno
+    int max = 10;
+    int range = nTurno * 2 + 1;
+    range = (range > max) ? max : (nTurno * 2 + 1);
+    abitante->dadiAttacco = rand() % range + 1;
+    abitante->dadiDifesa = rand() % range + 1;
+    abitante->pVita = rand() % range + 1;
+
+    return abitante;
+}
+
+static void stampaAbitante(AbitanteDelleSegrete *pAbitante)
+{
+    printf("\n\033[1;37mNome\033[1;0m: %s\n", pAbitante->nome);
+    printf("\033[1;31mAtk\033[1;0m: %d\n", pAbitante->dadiAttacco);
+    printf("\033[1;36mDef\033[1;0m: %d\n", pAbitante->dadiDifesa);
+    printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pAbitante->pVita);
 }
 
 static void puliziaBuffer()
