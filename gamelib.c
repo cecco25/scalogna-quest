@@ -35,6 +35,8 @@ static void posizionaGiocatore(Giocatore *pGiocatore);
 static void mescolaGiocatori();
 static void turno(Giocatore *pGiocatore);
 static void avanza(Giocatore *pGioatore);
+static void indietreggia(Giocatore *pGiocatore);
+static void stampaZona(ZonaSegrete *zona);
 static AbitanteDelleSegrete *creaAbitanteSegrete();
 static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
 
@@ -75,7 +77,7 @@ void impostaGioco()
 
     do
     {
-        printf("\033[1;37mInserisci il numero di giocatori (max 4)\033[1;0m\n");
+        printf("\033[1;37mInserisci il numero di giocatori (max 4):\033[1;0m ");
         scanf("%hu", &nGiocatori);
         puliziaBuffer();
         if (nGiocatori == 0 || nGiocatori > 4)
@@ -90,6 +92,8 @@ void impostaGioco()
         creaGiocatore(&giocatori[i], i);
     }
     // Menu Mappa
+    sleep(2);
+    system("clear");
     unsigned short sceltaMappa = 0;
     do
     {
@@ -141,10 +145,12 @@ void gioca()
     if (isImpostato == 1)
     {
         printf("\n\033[1;33mGioco impostato correttamente! Preparati a giocare...\033[0m\n");
-        nTurno = 1;
+        sleep(2);
+        system("clear");
         unsigned short fineGioco = 0;
         while (fineGioco != 1)
         {
+            printf("\n\t\033[1;33m--- Turno %d ---\033[1;0m", ++nTurno);
             mescolaGiocatori();
             for (int i = 0; i < nGiocatori; i++)
             {
@@ -681,13 +687,13 @@ static void turno(Giocatore *pGiocatore)
             avanza(pGiocatore);
             break;
         case 2:
-
+            indietreggia(pGiocatore);
             break;
         case 3:
             stampaGiocatore(pGiocatore);
             break;
         case 4:
-
+            stampaZona(pGiocatore->posizione);
             break;
         case 5:
 
@@ -701,21 +707,57 @@ static void turno(Giocatore *pGiocatore)
 
 static void avanza(Giocatore *pGiocatore)
 {
-    unsigned short spawnAbitante = 0;
-    if (pGiocatore->posizione->zonaSuccessiva == NULL)
-    {
-        AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
-        stampaAbitante(abitante);
-        spawnAbitante = 1;
-    }
-
     enum TipoPorta porta = pGiocatore->posizione->zonaSuccessiva->tipoPorta;
 
     if (porta == PORTA_DA_SCASSINARE || porta == PORTA_NORMALE)
     {
-        printf("\n\033[1;37mPer avanzare devi prima aprire la porta!\n");
+        printf("\033[1;31mAhia!\033[1;37m Hai sbattuto contro una porta...\033[1;0m\n");
         return;
     }
+
+    printf("\n\033[1;37mSei entrato in una nuova zona.\033[1;0m\n");
+    // Generazione abitante
+    int r = rand() % 3;
+    int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
+    if (pGiocatore->posizione->zonaSuccessiva == NULL || spawnAbitante == 1)
+    {
+        AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
+        spawnAbitante = 1;
+        sleep(2);
+        printf("\n... Oh ...");
+        sleep(2);
+        printf("E' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
+        stampaAbitante(abitante);
+    }
+}
+
+static void indietreggia(Giocatore *pGiocatore)
+{
+    if (pGiocatore->posizione->zonaPrecedente == NULL)
+    {
+        printf("\033[1;31mAttenzione!\033[1;0m Non puoi indietreggiare, non ci sono zone.\n");
+        return;
+    }
+
+    int r = rand() % 3;
+    int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
+    if (pGiocatore->posizione->zonaSuccessiva == NULL || spawnAbitante == 1)
+    {
+        AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
+        spawnAbitante = 1;
+        sleep(2);
+        printf("\n... Oh ...");
+        sleep(2);
+        printf("E' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
+        stampaAbitante(abitante);
+    }
+}
+
+static void stampaZona(ZonaSegrete *zona)
+{
+    unsigned short tesoro = (zona->tipoTesoro == 0) ? 0 : 1;
+    unsigned short porta = (zona->tipoPorta == 0) ? 0 : 1;
+    printf("\033[1;37mTipo Zona\033[1;0m: %s - \033[1;37mTesoro\033[1;0m: %s - \033[1;37mPorta\033[1;0m: %s\n", getTipoZona(zona->tipoZona), (tesoro == 0) ? "No" : "Sì", (porta == 0) ? "No" : "Sì");
 }
 
 static AbitanteDelleSegrete *creaAbitanteSegrete()

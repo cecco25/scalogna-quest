@@ -64,7 +64,7 @@ typedef struct Giocatore
 
 typedef struct AbitanteDelleSegrete
 {
-    char nome[40];
+    char nome[15];
     unsigned char pVita;
     unsigned char dadiAttacco;
     unsigned char dadiDifesa;
