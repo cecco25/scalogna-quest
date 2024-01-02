@@ -36,6 +36,11 @@ static void mescolaGiocatori();
 static void turno(Giocatore *pGiocatore);
 static void avanza(Giocatore *pGioatore);
 static void indietreggia(Giocatore *pGiocatore);
+static void apriPorta(Giocatore *pGiocatore);
+static void prendiTesoro(Giocatore *pGiocatore);
+static void scappa(Giocatore *pGiocatore);
+static void combatti(Giocatore *pGiocatore);
+static void potereSpeciale(Giocatore *pGiocatore);
 static void stampaZona(ZonaSegrete *zona);
 static AbitanteDelleSegrete *creaAbitanteSegrete();
 static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
@@ -669,7 +674,9 @@ static void mescolaGiocatori()
 static void turno(Giocatore *pGiocatore)
 {
     printf("\nE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
-    unsigned short sceltaTurno = 0;
+    short sceltaTurno = -1;
+    short azioni = 0;
+    short avanzato = 0;
     do
     {
         printf("\n\033[1;37mScegli cosa fare\033[1;0m:\n");
@@ -677,17 +684,34 @@ static void turno(Giocatore *pGiocatore)
         printf("> \033[1;35m2\033[0m: Indietreggia.\n");
         printf("> \033[1;34m3\033[0m: Stampa Giocatore.\n");
         printf("> \033[1;33m4\033[0m: Stampa Zona.\n");
-        printf("> \033[1;31m5\033[0m: Chiudi.\n");
+        printf("> \033[1;36m5\033[0m: Apri Porta.\n");
+        printf("> \033[1;35m6\033[0m: Prendi Tesoro.\n");
+        printf("> \033[1;34m7\033[0m: Scappa.\n");
+        printf("> \033[1;33m8\033[0m: Combatti.\n");
+        printf("> \033[1;32m9\033[0m: Gioca Potere Speciale.\n");
+        printf("> \033[1;31m0\033[0m: Passa Turno.\n");
         printf("\033[92mScelta:\033[0m ");
         scanf("%hd", &sceltaTurno);
         puliziaBuffer();
         switch (sceltaTurno)
         {
+        case 0:
+            break;
         case 1:
-            avanza(pGiocatore);
+            if (avanzato == 0)
+            {
+                avanzato = 1;
+                avanza(pGiocatore);
+                azioni++;
+            }
+            else
+            {
+                printf("\n\033[1;31mAttenzione!\033[1;37m Non puoi avanzare di nuovo.\n");
+            }
             break;
         case 2:
             indietreggia(pGiocatore);
+            azioni++;
             break;
         case 3:
             stampaGiocatore(pGiocatore);
@@ -696,18 +720,27 @@ static void turno(Giocatore *pGiocatore)
             stampaZona(pGiocatore->posizione);
             break;
         case 5:
-
+            apriPorta(pGiocatore);
+            break;
+        case 6:
+            prendiTesoro(pGiocatore);
+            break;
+        case 7:
+            break;
+        case 8:
+            break;
+        case 9:
             break;
         default:
-            printf("\033[1;31mAttenzione!\033[1;0m Inserisci un numero tra 1 e 5.\n");
+            printf("\033[1;31mAttenzione!\033[1;0m Cosa stai cercando di fare?!\n");
             break;
         }
-    } while (sceltaTurno != 5);
+    } while (sceltaTurno != 0);
 }
 
 static void avanza(Giocatore *pGiocatore)
 {
-    enum TipoPorta porta = pGiocatore->posizione->zonaSuccessiva->tipoPorta;
+    enum TipoPorta porta = pGiocatore->posizione->tipoPorta;
 
     if (porta == PORTA_DA_SCASSINARE || porta == PORTA_NORMALE)
     {
@@ -715,6 +748,7 @@ static void avanza(Giocatore *pGiocatore)
         return;
     }
 
+    pGiocatore->posizione = pGiocatore->posizione->zonaSuccessiva;
     printf("\n\033[1;37mSei entrato in una nuova zona.\033[1;0m\n");
     // Generazione abitante
     int r = rand() % 3;
@@ -723,6 +757,7 @@ static void avanza(Giocatore *pGiocatore)
     {
         AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
         spawnAbitante = 1;
+        printf("...\n");
         sleep(2);
         printf("\n... Oh ...");
         sleep(2);
@@ -739,18 +774,92 @@ static void indietreggia(Giocatore *pGiocatore)
         return;
     }
 
+    pGiocatore->posizione = pGiocatore->posizione->zonaPrecedente;
+    printf("\n\033[1;37mSei tornato indietro.\033[1;0m\n");
+
     int r = rand() % 3;
     int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
     if (pGiocatore->posizione->zonaSuccessiva == NULL || spawnAbitante == 1)
     {
         AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
         spawnAbitante = 1;
+        printf("...\n");
         sleep(2);
-        printf("\n... Oh ...");
+        printf("\n... Oh ... \n");
         sleep(2);
-        printf("E' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
+        printf("\033[1;37mE' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
         stampaAbitante(abitante);
     }
+}
+
+static void apriPorta(Giocatore *pGiocatore)
+{
+    enum TipoPorta porta = pGiocatore->posizione->tipoPorta;
+    if (porta == NESSUNA_PORTA)
+    {
+        printf("\n\033[1;37mNon c'era nessuna porta... (hai bevuto troppe pozioni?)\033[1;0m\n");
+    }
+    else if (porta == PORTA_NORMALE)
+    {
+        printf("\n\033[1;37mHai aperto la porta.\033[1;0m\n");
+    }
+    else if (porta == PORTA_DA_SCASSINARE)
+    {
+        printf("\n\033[1;37mLa porta va scassinata, vediamo se ci riuscirai...\033[1;0m\n");
+        int dado = rand() % 6;
+        sleep(2);
+        printf("\033[92mDado:\033[0m %d\n", dado);
+        sleep(1);
+        if (dado <= pGiocatore->mente)
+        {
+            pGiocatore->posizione->tipoPorta = NESSUNA_PORTA;
+            pGiocatore->posizione = pGiocatore->posizione->zonaSuccessiva;
+            printf("\n\033[92mSei riuscito a scassinare la porta! Avanzi alla zona successiva.\033[0m\n");
+        }
+        else
+        {
+            int r = rand() % 100;
+
+            if (r < 10)
+            {
+                // 10% di probabilità
+                pGiocatore->posizione = pFirst;
+            }
+            else if (r < 60)
+            {
+                // 50% di probabilità (da 10 a 59)
+                pGiocatore->pVita -= 1;
+            }
+            else
+            {
+                // 40% di probabilità (da 60 a 99)
+            }
+        }
+    }
+}
+
+static void prendiTesoro(Giocatore *pGiocatore)
+{
+    if (pGiocatore->posizione->tipoTesoro == VELENO)
+    {
+        pGiocatore->pVita -= 2;
+        printf("\n\033[1;37mNel tesoro c'era del \033[1;35mVeleno\033[1;37m!\n\033[1;31m-2 punti vita.\033[0m\n");
+    }
+    else if (pGiocatore->posizione->tipoTesoro == GUARIGIONE)
+    {
+        pGiocatore->pVita += 1;
+        printf("\n\033[1;37mNel tesoro c'era una \033[1;32mGuarigione\033[1;37m!\n\033[1;32m+1 punti vita.\033[0m\n");
+    }
+    else if (pGiocatore->posizione->tipoTesoro == DOPPIA_GUARIGIONE)
+    {
+        pGiocatore->pVita += 2;
+        printf("\n\033[1;37mNel tesoro c'era una \033[1;32mDoppia Guarigione\033[1;37m!\n\033[1;32m+2 punti vita.\033[0m\n");
+    }
+    else
+    {
+        printf("\n\033[1;37mNon c'era nessun tesoro.\033[0m\n");
+    }
+    pGiocatore->posizione->tipoTesoro = NESSUN_TESORO;
 }
 
 static void stampaZona(ZonaSegrete *zona)
