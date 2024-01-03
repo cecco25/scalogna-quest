@@ -34,7 +34,7 @@ static void chiudiMappa();
 static void posizionaGiocatore(Giocatore *pGiocatore);
 static void mescolaGiocatori();
 static void turno(Giocatore *pGiocatore);
-static void avanza(Giocatore *pGioatore);
+static int avanza(Giocatore *pGioatore);
 static void indietreggia(Giocatore *pGiocatore);
 static void apriPorta(Giocatore *pGiocatore);
 static void prendiTesoro(Giocatore *pGiocatore);
@@ -46,10 +46,10 @@ static AbitanteDelleSegrete *creaAbitanteSegrete();
 static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
 
 // Conversione enum a testo
-static char *getTipoZona(enum TipoZona tipo);
-static char *getTipoTesoro(enum TipoTesoro tipo);
-static char *getTipoPorta(enum TipoPorta tipo);
-static char *getClasseGiocatore(enum ClasseGiocatore classe);
+static char *getTipoZona(TipoZona tipo);
+static char *getTipoTesoro(TipoTesoro tipo);
+static char *getTipoPorta(TipoPorta tipo);
+static char *getClasseGiocatore(ClasseGiocatore classe);
 
 // Pulizia Buffer
 int c = 0;
@@ -155,7 +155,7 @@ void gioca()
         unsigned short fineGioco = 0;
         while (fineGioco != 1)
         {
-            printf("\n\t\033[1;33m--- Turno %d ---\033[1;0m", ++nTurno);
+            nTurno++;
             mescolaGiocatori();
             for (int i = 0; i < nGiocatori; i++)
             {
@@ -230,21 +230,21 @@ static void assegnaValoriClasse(Giocatore *pGiocatore)
         pGiocatore->dadiDifesa = 2;
         pGiocatore->pVita = 7;
         pGiocatore->potereSpeciale = 1;
-        pGiocatore->mente = rand() % 3 + 2;
+        pGiocatore->mente = ((rand() % 2) == 0) ? 2 : 3;
         break;
     case 2: // ELFO
         pGiocatore->dadiAttacco = 2;
         pGiocatore->dadiDifesa = 2;
         pGiocatore->pVita = 6;
         pGiocatore->potereSpeciale = 1;
-        pGiocatore->mente = rand() % 4 + 3;
+        pGiocatore->mente = ((rand() % 2) == 0) ? 3 : 4;
         break;
     case 3: // MAGO
         pGiocatore->dadiAttacco = 1;
         pGiocatore->dadiDifesa = 2;
         pGiocatore->pVita = 4;
         pGiocatore->potereSpeciale = 3;
-        pGiocatore->mente = rand() % 5 + 4;
+        pGiocatore->mente = ((rand() % 2) == 0) ? 4 : 5;
         break;
     default:
         break;
@@ -315,7 +315,7 @@ static void generaMappa()
         nuovaZona->zonaSuccessiva = NULL;
         nuovaZona->tipoPorta = rand() % 3;
         nuovaZona->tipoTesoro = rand() % 4;
-        nuovaZona->tipoZona = rand() % 9;
+        nuovaZona->tipoZona = rand() % 10;
 
         // Primo Elemento della lista
         if (i == 0)
@@ -379,7 +379,7 @@ static void inserimentoInTesta()
     pNuovaZona->zonaSuccessiva = NULL;
     pNuovaZona->tipoPorta = rand() % 3;
     pNuovaZona->tipoTesoro = rand() % 4;
-    pNuovaZona->tipoZona = rand() % 9;
+    pNuovaZona->tipoZona = rand() % 10;
     if (pFirst == NULL)
         pFirst = pNuovaZona;
     else
@@ -397,7 +397,7 @@ static void inserimentoInCoda()
     pNuovaZona->zonaSuccessiva = NULL;
     pNuovaZona->tipoPorta = rand() % 3;
     pNuovaZona->tipoTesoro = rand() % 4;
-    pNuovaZona->tipoZona = rand() % 9;
+    pNuovaZona->tipoZona = rand() % 10;
     ZonaSegrete *temp = pFirst;
     if (temp == NULL)
     {
@@ -426,7 +426,7 @@ static void inserimentoInPosizione(unsigned short posizione)
         ZonaSegrete *pNuovaZona = (ZonaSegrete *)malloc(sizeof(ZonaSegrete));
         pNuovaZona->tipoPorta = rand() % 3;
         pNuovaZona->tipoTesoro = rand() % 4;
-        pNuovaZona->tipoZona = rand() % 9;
+        pNuovaZona->tipoZona = rand() % 10;
         pNuovaZona->zonaSuccessiva = NULL;
         pNuovaZona->zonaPrecedente = NULL;
 
@@ -579,7 +579,7 @@ static void chiudiMappa()
     }
 }
 
-static char *getTipoZona(enum TipoZona tipo)
+static char *getTipoZona(TipoZona tipo)
 {
     switch (tipo)
     {
@@ -591,6 +591,8 @@ static char *getTipoZona(enum TipoZona tipo)
         return "Sala Banchetto";
     case MAGAZZINO:
         return "Magazzino";
+    case GIARDINO:
+        return "Giardino";
     case POSTO_GUARDIA:
         return "Posto Guardia";
     case PRIGIONE:
@@ -606,7 +608,7 @@ static char *getTipoZona(enum TipoZona tipo)
     }
 }
 
-static char *getTipoTesoro(enum TipoTesoro tipo)
+static char *getTipoTesoro(TipoTesoro tipo)
 {
     switch (tipo)
     {
@@ -623,7 +625,7 @@ static char *getTipoTesoro(enum TipoTesoro tipo)
     }
 }
 
-static char *getTipoPorta(enum TipoPorta tipo)
+static char *getTipoPorta(TipoPorta tipo)
 {
     switch (tipo)
     {
@@ -638,7 +640,7 @@ static char *getTipoPorta(enum TipoPorta tipo)
     }
 }
 
-static char *getClasseGiocatore(enum ClasseGiocatore classe)
+static char *getClasseGiocatore(ClasseGiocatore classe)
 {
     switch (classe)
     {
@@ -673,10 +675,14 @@ static void mescolaGiocatori()
 
 static void turno(Giocatore *pGiocatore)
 {
-    printf("\nE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
     short sceltaTurno = -1;
     short azioni = 0;
     short avanzato = 0;
+    printf("*-----------------------------------------*");
+    printf("\n\t\033[1;33m---- Turno %d ----\033[1;0m\n", nTurno);
+    printf("\n\tE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
+    printf("*----------------------------------------*\n");
+
     do
     {
         printf("\n\033[1;37mScegli cosa fare\033[1;0m:\n");
@@ -693,15 +699,22 @@ static void turno(Giocatore *pGiocatore)
         printf("\033[92mScelta:\033[0m ");
         scanf("%hd", &sceltaTurno);
         puliziaBuffer();
+        system("clear");
+
+        printf("*-----------------------------------------*");
+        printf("\n\t\033[1;33m--- Turno %d ---\033[1;0m\n", nTurno);
+        printf("\n\tE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
+        printf("*----------------------------------------*\n\n");
+
         switch (sceltaTurno)
         {
         case 0:
+            system("clear");
             break;
         case 1:
             if (avanzato == 0)
             {
-                avanzato = 1;
-                avanza(pGiocatore);
+                avanzato = avanza(pGiocatore);
                 azioni++;
             }
             else
@@ -721,9 +734,11 @@ static void turno(Giocatore *pGiocatore)
             break;
         case 5:
             apriPorta(pGiocatore);
+            azioni++;
             break;
         case 6:
             prendiTesoro(pGiocatore);
+            azioni++;
             break;
         case 7:
             break;
@@ -738,14 +753,15 @@ static void turno(Giocatore *pGiocatore)
     } while (sceltaTurno != 0);
 }
 
-static void avanza(Giocatore *pGiocatore)
+// Ritorna 1 se il giocatore è avanzato, altrimenti 0
+static int avanza(Giocatore *pGiocatore)
 {
-    enum TipoPorta porta = pGiocatore->posizione->tipoPorta;
+    TipoPorta porta = pGiocatore->posizione->tipoPorta;
 
     if (porta == PORTA_DA_SCASSINARE || porta == PORTA_NORMALE)
     {
         printf("\033[1;31mAhia!\033[1;37m Hai sbattuto contro una porta...\033[1;0m\n");
-        return;
+        return 0;
     }
 
     pGiocatore->posizione = pGiocatore->posizione->zonaSuccessiva;
@@ -759,11 +775,12 @@ static void avanza(Giocatore *pGiocatore)
         spawnAbitante = 1;
         printf("...\n");
         sleep(2);
-        printf("\n... Oh ...");
+        printf("\n... Oh ...\n");
         sleep(2);
         printf("E' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
         stampaAbitante(abitante);
     }
+    return 1;
 }
 
 static void indietreggia(Giocatore *pGiocatore)
@@ -776,6 +793,8 @@ static void indietreggia(Giocatore *pGiocatore)
 
     pGiocatore->posizione = pGiocatore->posizione->zonaPrecedente;
     printf("\n\033[1;37mSei tornato indietro.\033[1;0m\n");
+
+    pGiocatore->posizione->tipoTesoro = rand() % 4;
 
     int r = rand() % 3;
     int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
@@ -794,13 +813,14 @@ static void indietreggia(Giocatore *pGiocatore)
 
 static void apriPorta(Giocatore *pGiocatore)
 {
-    enum TipoPorta porta = pGiocatore->posizione->tipoPorta;
+    TipoPorta porta = pGiocatore->posizione->tipoPorta;
     if (porta == NESSUNA_PORTA)
     {
         printf("\n\033[1;37mNon c'era nessuna porta... (hai bevuto troppe pozioni?)\033[1;0m\n");
     }
     else if (porta == PORTA_NORMALE)
     {
+        pGiocatore->posizione->tipoPorta = NESSUNA_PORTA;
         printf("\n\033[1;37mHai aperto la porta.\033[1;0m\n");
     }
     else if (porta == PORTA_DA_SCASSINARE)
@@ -813,8 +833,7 @@ static void apriPorta(Giocatore *pGiocatore)
         if (dado <= pGiocatore->mente)
         {
             pGiocatore->posizione->tipoPorta = NESSUNA_PORTA;
-            pGiocatore->posizione = pGiocatore->posizione->zonaSuccessiva;
-            printf("\n\033[92mSei riuscito a scassinare la porta! Avanzi alla zona successiva.\033[0m\n");
+            printf("\n\033[92mSei riuscito a scassinare la porta!\033[0m\n");
         }
         else
         {
@@ -864,8 +883,8 @@ static void prendiTesoro(Giocatore *pGiocatore)
 
 static void stampaZona(ZonaSegrete *zona)
 {
-    unsigned short tesoro = (zona->tipoTesoro == 0) ? 0 : 1;
-    unsigned short porta = (zona->tipoPorta == 0) ? 0 : 1;
+    unsigned short tesoro = (zona->tipoTesoro == NESSUN_TESORO) ? 0 : 1;
+    unsigned short porta = (zona->tipoPorta == NESSUNA_PORTA) ? 0 : 1;
     printf("\033[1;37mTipo Zona\033[1;0m: %s - \033[1;37mTesoro\033[1;0m: %s - \033[1;37mPorta\033[1;0m: %s\n", getTipoZona(zona->tipoZona), (tesoro == 0) ? "No" : "Sì", (porta == 0) ? "No" : "Sì");
 }
 

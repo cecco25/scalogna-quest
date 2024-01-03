@@ -3,41 +3,42 @@ void impostaGioco();
 void gioca();
 void terminaGioco();
 
-enum ClasseGiocatore
+typedef enum ClasseGiocatore
 {
     BARBARO,
     NANO,
     ELFO,
     MAGO
-};
+} ClasseGiocatore;
 
-enum TipoZona
+typedef enum TipoZona
 {
     CORRIDIO,
     SCALA,
     SALA_BANCHETTO,
     MAGAZZINO,
+    GIARDINO,
     POSTO_GUARDIA,
     PRIGIONE,
     CUCINA,
     ARMERIA,
     TEMPIO
-};
+} TipoZona;
 
-enum TipoTesoro
+typedef enum TipoTesoro
 {
     NESSUN_TESORO,
     VELENO,
     GUARIGIONE,
     DOPPIA_GUARIGIONE
-};
+} TipoTesoro;
 
-enum TipoPorta
+typedef enum TipoPorta
 {
     NESSUNA_PORTA,
     PORTA_NORMALE,
     PORTA_DA_SCASSINARE
-};
+} TipoPorta;
 
 typedef struct ZonaSegrete
 {
@@ -46,7 +47,6 @@ typedef struct ZonaSegrete
     enum TipoZona tipoZona;
     enum TipoTesoro tipoTesoro;
     enum TipoPorta tipoPorta;
-
 } ZonaSegrete;
 
 typedef struct Giocatore
@@ -59,7 +59,6 @@ typedef struct Giocatore
     unsigned char dadiDifesa;
     unsigned char mente;
     unsigned char potereSpeciale;
-
 } Giocatore;
 
 typedef struct AbitanteDelleSegrete
