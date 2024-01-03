@@ -38,13 +38,13 @@ static int avanza(Giocatore *pGioatore);
 static void indietreggia(Giocatore *pGiocatore);
 static void apriPorta(Giocatore *pGiocatore);
 static void prendiTesoro(Giocatore *pGiocatore);
+static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante);
 static void scappa(Giocatore *pGiocatore);
 static void combatti(Giocatore *pGiocatore);
-static void potereSpeciale(Giocatore *pGiocatore);
+static int potereSpeciale(Giocatore *pGiocatore);
 static void stampaZona(ZonaSegrete *zona);
 static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona);
 static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
-static int contaAbitanti(ZonaSegrete *zona);
 
 // Conversione enum a testo
 static char *getTipoZona(TipoZona tipo);
@@ -175,7 +175,7 @@ void terminaGioco()
 {
     for (int i = 0; i < 4; i++)
     {
-        cancellaGiocatori(&giocatori[i]);
+        cancellaGiocatore(&giocatori[i]);
     }
     cancellaMappa();
 
@@ -679,10 +679,10 @@ static void turno(Giocatore *pGiocatore)
     short sceltaTurno = -1;
     short azioni = 0;
     short avanzato = 0;
-    printf("*-----------------------------------------*");
+    printf("*-----------------------------------------*\n");
     printf("\n\t\033[1;33m---- Turno %d ----\033[1;0m\n", nTurno);
     printf("\n\tE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
-    printf("*----------------------------------------*\n");
+    printf("*----------------------------------------*\n\n");
 
     do
     {
@@ -693,17 +693,14 @@ static void turno(Giocatore *pGiocatore)
         printf("> \033[1;33m4\033[0m: Stampa Zona.\n");
         printf("> \033[1;36m5\033[0m: Apri Porta.\n");
         printf("> \033[1;35m6\033[0m: Prendi Tesoro.\n");
-        printf("> \033[1;34m7\033[0m: Scappa.\n");
-        printf("> \033[1;33m8\033[0m: Combatti.\n");
-        printf("> \033[1;32m9\033[0m: Gioca Potere Speciale.\n");
         printf("> \033[1;31m0\033[0m: Passa Turno.\n");
         printf("\033[92mScelta:\033[0m ");
         scanf("%hd", &sceltaTurno);
         puliziaBuffer();
         system("clear");
 
-        printf("*-----------------------------------------*");
-        printf("\n\t\033[1;33m--- Turno %d ---\033[1;0m\n", nTurno);
+        printf("*-----------------------------------------*\n");
+        printf("\n\t\033[1;33m---- Turno %d ----\033[1;0m\n", nTurno);
         printf("\n\tE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
         printf("*----------------------------------------*\n\n");
 
@@ -741,14 +738,6 @@ static void turno(Giocatore *pGiocatore)
             prendiTesoro(pGiocatore);
             azioni++;
             break;
-        case 7:
-            break;
-        case 8:
-            break;
-        case 9:
-            potereSpeciale(pGiocatore);
-            azioni++;
-            break;
         default:
             printf("\033[1;31mAttenzione!\033[1;0m Cosa stai cercando di fare?!\n");
             break;
@@ -782,6 +771,10 @@ static int avanza(Giocatore *pGiocatore)
         sleep(2);
         printf("E' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
         stampaAbitante(abitante);
+        printf("\n\033[1;37mInvia qualcosa quando ti senti pronto...\033[1;0m\n");
+        getchar();
+        puliziaBuffer();
+        duelloAbitante(pGiocatore, abitante);
     }
     return 1;
 }
@@ -811,6 +804,10 @@ static void indietreggia(Giocatore *pGiocatore)
         sleep(2);
         printf("\033[1;37mE' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
         stampaAbitante(abitante);
+        printf("\n\033[1;37mInvia qualcosa quando ti senti pronto...\033[1;0m\n");
+        getchar();
+        puliziaBuffer();
+        duelloAbitante(pGiocatore, abitante);
     }
 }
 
@@ -840,21 +837,36 @@ static void apriPorta(Giocatore *pGiocatore)
         }
         else
         {
+            printf("\n\033[0;31mMi dispiace, non sei riuscito a scassinare la porta!\033[0;0m\n");
+
             int r = rand() % 100;
 
             if (r < 10)
             {
                 // 10% di probabilità
                 pGiocatore->posizione = pFirst;
+                printf("\n\033[1;37mTorni alla prima zona dellle segrete: %s", getTipoZona(pFirst->tipoZona));
             }
             else if (r < 60)
             {
                 // 50% di probabilità (da 10 a 59)
                 pGiocatore->pVita -= 1;
+                printf("\n\033[1;31m-1\033[1;37m Punto Vita\n");
             }
             else
             {
                 // 40% di probabilità (da 60 a 99)
+                AbitanteDelleSegrete *abitante = creaAbitanteSegrete(pGiocatore->posizione);
+                printf("...\n");
+                sleep(2);
+                printf("\n... Oh ... \n");
+                sleep(2);
+                printf("\033[1;37mE' apparso davanti a te \033[1;31m%s\033[1;37m! Ora dovrai combatterlo!\033[1;0m\n", abitante->nome);
+                stampaAbitante(abitante);
+                printf("\n\033[1;37mInvia qualcosa quando ti senti pronto...\033[1;0m\n");
+                getchar();
+                puliziaBuffer();
+                duelloAbitante(pGiocatore, abitante);
             }
         }
     }
@@ -891,16 +903,54 @@ static void stampaZona(ZonaSegrete *zona)
     printf("\033[1;37mTipo Zona\033[1;0m: %s - \033[1;37mTesoro\033[1;0m: %s - \033[1;37mPorta\033[1;0m: %s\n", getTipoZona(zona->tipoZona), (tesoro == 0) ? "No" : "Sì", (porta == 0) ? "No" : "Sì");
 }
 
-static void potereSpeciale(Giocatore *pGiocatore)
+static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
+{
+    unsigned short sceltaDuello = 0;
+    int win = -1;
+    do
+    {
+        system("clear");
+        printf("*-----------------------------------------*\n");
+        printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore, pAbitante->nome);
+        printf("*-----------------------------------------*\n\n");
+        printf("> \033[1;33m1\033[0m: Combatti.\n");
+        printf("> \033[1;34m2\033[0m: Scappa.\n");
+        printf("> \033[1;32m3\033[0m: Gioca Potere Speciale.\n");
+        printf("\033[92mScelta:\033[0m ");
+        scanf("%hd", &sceltaDuello);
+        puliziaBuffer();
+
+        switch (sceltaDuello)
+        {
+        case 1:
+
+            break;
+        case 2:
+
+            break;
+        case 3:
+            win = potereSpeciale(pGiocatore);
+            break;
+        default:
+            printf("\033[1;31mAttenzione!\033[1;0m Cosa stai cercando di fare?!\n");
+            break;
+        }
+
+    } while ((sceltaDuello != 0 && sceltaDuello >= 4) && win == 0);
+}
+
+// Ritorna 1 se l'abitante è stato sconfitto, altrimenti 0
+static int potereSpeciale(Giocatore *pGiocatore)
 {
     if (pGiocatore->potereSpeciale <= 0)
     {
         printf("\033[1;31mAttenzione!\033[1;37m Non hai abbastanza potere speciale.\033[1;0m\n");
-        return;
+        return 0;
     }
 
     pGiocatore->potereSpeciale -= 1;
     printf("\033[0;37mStavolta l'hai scampata...\033[1;32m Hai sconfitto l'abitante delle segrete!\n\033[1;34mPotere Speciale: \033[1;0m%d\n", pGiocatore->potereSpeciale);
+    return 1;
 }
 
 static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona)
@@ -933,7 +983,6 @@ static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona)
     abitante->dadiAttacco = rand() % range + 1;
     abitante->dadiDifesa = rand() % range + 1;
     abitante->pVita = rand() % range + 1;
-    abitante->posizione = zona;
 
     return abitante;
 }
@@ -944,7 +993,7 @@ static void stampaAbitante(AbitanteDelleSegrete *pAbitante)
     printf("\033[1;31mAtk\033[1;0m: %d\n", pAbitante->dadiAttacco);
     printf("\033[1;36mDef\033[1;0m: %d\n", pAbitante->dadiDifesa);
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pAbitante->pVita);
-    printf("\033[1;33mZona\033[1;0m: %s\n", getTipoZona(pAbitante->posizione->tipoZona));
+    // printf("\033[1;33mZona\033[1;0m: %s\n", getTipoZona(pAbitante->posizione->tipoZona));
 }
 
 static void puliziaBuffer()

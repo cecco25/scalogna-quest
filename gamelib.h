@@ -67,6 +67,5 @@ typedef struct AbitanteDelleSegrete
     unsigned char pVita;
     unsigned char dadiAttacco;
     unsigned char dadiDifesa;
-    struct ZonaSegrete *posizione;
 
 } AbitanteDelleSegrete;
