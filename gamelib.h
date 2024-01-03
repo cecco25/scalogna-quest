@@ -44,15 +44,15 @@ typedef struct ZonaSegrete
 {
     struct ZonaSegrete *zonaSuccessiva;
     struct ZonaSegrete *zonaPrecedente;
-    enum TipoZona tipoZona;
-    enum TipoTesoro tipoTesoro;
-    enum TipoPorta tipoPorta;
+    TipoZona tipoZona;
+    TipoTesoro tipoTesoro;
+    TipoPorta tipoPorta;
 } ZonaSegrete;
 
 typedef struct Giocatore
 {
     char nomeGiocatore[40];
-    enum ClasseGiocatore classeGiocatore;
+    ClasseGiocatore classeGiocatore;
     struct ZonaSegrete *posizione;
     unsigned char pVita;
     unsigned char dadiAttacco;
@@ -67,4 +67,6 @@ typedef struct AbitanteDelleSegrete
     unsigned char pVita;
     unsigned char dadiAttacco;
     unsigned char dadiDifesa;
+    struct ZonaSegrete *posizione;
+
 } AbitanteDelleSegrete;

@@ -12,7 +12,7 @@ static void creaGiocatore(Giocatore *pGiocatore, int i);
 static void sceltaClasse(Giocatore *pGiocatore);
 static void assegnaValoriClasse(Giocatore *pGiocatore); // Assegna i valori alla classe del giocatore
 static void sacrificaPunti(Giocatore *pGiocatore);
-static void cancellaGiocatori(Giocatore *pGiocatori);
+static void cancellaGiocatore(Giocatore *pGiocatore);
 static void stampaGiocatore(Giocatore *pGiocatore);
 
 // Mappa
@@ -42,8 +42,9 @@ static void scappa(Giocatore *pGiocatore);
 static void combatti(Giocatore *pGiocatore);
 static void potereSpeciale(Giocatore *pGiocatore);
 static void stampaZona(ZonaSegrete *zona);
-static AbitanteDelleSegrete *creaAbitanteSegrete();
+static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona);
 static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
+static int contaAbitanti(ZonaSegrete *zona);
 
 // Conversione enum a testo
 static char *getTipoZona(TipoZona tipo);
@@ -75,7 +76,7 @@ void impostaGioco()
         int i = 0;
         for (i = 0; i < 4; i++)
         {
-            cancellaGiocatori(&giocatori[i]);
+            cancellaGiocatore(&giocatori[i]);
         }
         cancellaMappa();
     }
@@ -185,6 +186,7 @@ static void creaGiocatore(Giocatore *pGiocatore, int i)
 {
     do
     {
+        system("clear");
         printf("\n\033[1;37mInserisci il nickname del giocatore n. %d\033[1;0m: ", i + 1); // Input del nome del giocatore
         fgets(pGiocatore->nomeGiocatore, 40, stdin);
         // puliziaBuffer();
@@ -249,6 +251,7 @@ static void assegnaValoriClasse(Giocatore *pGiocatore)
     default:
         break;
     }
+    system("clear");
     stampaGiocatore(pGiocatore);
     sacrificaPunti(pGiocatore);
 }
@@ -276,7 +279,7 @@ static void sacrificaPunti(Giocatore *pGiocatore)
         printf("\nAggiornamento classe giocatore:\033[1;35m Punti Mente: %d\033[1;0m - \033[1;32mPunti Vita: %d\033[1;0m.\n", pGiocatore->mente, pGiocatore->pVita);
         break;
     default:
-        printf("\n\033[1;37mNotifica\033[1;0m:Hai rifiutato di sacrificare i punti.\n");
+        printf("\n\033[1;37mNotifica\033[1;0m: Hai rifiutato di sacrificare i punti.\n");
         break;
     }
 }
@@ -292,18 +295,16 @@ static void stampaGiocatore(Giocatore *pGiocatore)
     printf("\033[1;35mMente\033[1;0m: %d\n", pGiocatore->mente);
 }
 
-static void cancellaGiocatori(Giocatore *pGiocatore)
+static void cancellaGiocatore(Giocatore *pGiocatore)
 {
-    int i = 0;
-    for (i = 0; i < 4; i++)
-    {
-        pGiocatore->dadiAttacco = 0;
-        pGiocatore->dadiDifesa = 0;
-        pGiocatore->pVita = 0;
-        pGiocatore->mente = 0;
-        pGiocatore->potereSpeciale = 0;
-        pGiocatore->classeGiocatore = -1;
-    }
+
+    pGiocatore->dadiAttacco = 0;
+    pGiocatore->dadiDifesa = 0;
+    pGiocatore->pVita = 0;
+    pGiocatore->mente = 0;
+    pGiocatore->potereSpeciale = 0;
+    pGiocatore->classeGiocatore = -1;
+    free(pGiocatore);
 }
 
 static void generaMappa()
@@ -745,6 +746,8 @@ static void turno(Giocatore *pGiocatore)
         case 8:
             break;
         case 9:
+            potereSpeciale(pGiocatore);
+            azioni++;
             break;
         default:
             printf("\033[1;31mAttenzione!\033[1;0m Cosa stai cercando di fare?!\n");
@@ -753,7 +756,7 @@ static void turno(Giocatore *pGiocatore)
     } while (sceltaTurno != 0);
 }
 
-// Ritorna 1 se il giocatore è avanzato, altrimenti 0
+// Ritorna 1 se il giocatore è andato avanti, altrimenti 0
 static int avanza(Giocatore *pGiocatore)
 {
     TipoPorta porta = pGiocatore->posizione->tipoPorta;
@@ -771,7 +774,7 @@ static int avanza(Giocatore *pGiocatore)
     int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
     if (pGiocatore->posizione->zonaSuccessiva == NULL || spawnAbitante == 1)
     {
-        AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
+        AbitanteDelleSegrete *abitante = creaAbitanteSegrete(pGiocatore->posizione);
         spawnAbitante = 1;
         printf("...\n");
         sleep(2);
@@ -800,7 +803,7 @@ static void indietreggia(Giocatore *pGiocatore)
     int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
     if (pGiocatore->posizione->zonaSuccessiva == NULL || spawnAbitante == 1)
     {
-        AbitanteDelleSegrete *abitante = creaAbitanteSegrete();
+        AbitanteDelleSegrete *abitante = creaAbitanteSegrete(pGiocatore->posizione);
         spawnAbitante = 1;
         printf("...\n");
         sleep(2);
@@ -888,7 +891,19 @@ static void stampaZona(ZonaSegrete *zona)
     printf("\033[1;37mTipo Zona\033[1;0m: %s - \033[1;37mTesoro\033[1;0m: %s - \033[1;37mPorta\033[1;0m: %s\n", getTipoZona(zona->tipoZona), (tesoro == 0) ? "No" : "Sì", (porta == 0) ? "No" : "Sì");
 }
 
-static AbitanteDelleSegrete *creaAbitanteSegrete()
+static void potereSpeciale(Giocatore *pGiocatore)
+{
+    if (pGiocatore->potereSpeciale <= 0)
+    {
+        printf("\033[1;31mAttenzione!\033[1;37m Non hai abbastanza potere speciale.\033[1;0m\n");
+        return;
+    }
+
+    pGiocatore->potereSpeciale -= 1;
+    printf("\033[0;37mStavolta l'hai scampata...\033[1;32m Hai sconfitto l'abitante delle segrete!\n\033[1;34mPotere Speciale: \033[1;0m%d\n", pGiocatore->potereSpeciale);
+}
+
+static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona)
 {
     char nomeAbitante[15][15] = {"Azuril",
                                  "Dovarius",
@@ -918,6 +933,7 @@ static AbitanteDelleSegrete *creaAbitanteSegrete()
     abitante->dadiAttacco = rand() % range + 1;
     abitante->dadiDifesa = rand() % range + 1;
     abitante->pVita = rand() % range + 1;
+    abitante->posizione = zona;
 
     return abitante;
 }
@@ -928,6 +944,7 @@ static void stampaAbitante(AbitanteDelleSegrete *pAbitante)
     printf("\033[1;31mAtk\033[1;0m: %d\n", pAbitante->dadiAttacco);
     printf("\033[1;36mDef\033[1;0m: %d\n", pAbitante->dadiDifesa);
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pAbitante->pVita);
+    printf("\033[1;33mZona\033[1;0m: %s\n", getTipoZona(pAbitante->posizione->tipoZona));
 }
 
 static void puliziaBuffer()
