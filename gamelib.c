@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 
 Giocatore giocatori[4];
 
@@ -39,8 +40,8 @@ static void indietreggia(Giocatore *pGiocatore);
 static void apriPorta(Giocatore *pGiocatore);
 static void prendiTesoro(Giocatore *pGiocatore);
 static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante);
-static void scappa(Giocatore *pGiocatore);
-static void combatti(Giocatore *pGiocatore);
+static int scappa(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante);
+static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante);
 static int potereSpeciale(Giocatore *pGiocatore);
 static void stampaZona(ZonaSegrete *zona);
 static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona);
@@ -572,6 +573,7 @@ static void chiudiMappa()
     if (dimensioneLista() >= 15)
     {
         isImpostato = 1;
+        system("clear");
         printf("\033[1;37mFine Creazione Mappa.\033[1;0m\n");
     }
     else
@@ -906,37 +908,98 @@ static void stampaZona(ZonaSegrete *zona)
 static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 {
     unsigned short sceltaDuello = 0;
-    int win = -1;
+    int win = 0;
+    system("clear");
+    printf("*-----------------------------------------*\n");
+    printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
+    printf("*-----------------------------------------*\n\n");
     do
     {
-        system("clear");
-        printf("*-----------------------------------------*\n");
-        printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore, pAbitante->nome);
-        printf("*-----------------------------------------*\n\n");
-        printf("> \033[1;33m1\033[0m: Combatti.\n");
-        printf("> \033[1;34m2\033[0m: Scappa.\n");
-        printf("> \033[1;32m3\033[0m: Gioca Potere Speciale.\n");
+        printf("\n\033[1;37mScegli cosa fare\033[1;0m:\n");
+        printf("> \033[1;36m1\033[0m: Combatti.\n");
+        printf("> \033[1;35m2\033[0m: Scappa.\n");
+        printf("> \033[1;34m3\033[0m: Gioca Potere Speciale.\n");
+        printf("> \033[1;33m4\033[0m: Stampa Giocatore.\n");
+        printf("> \033[1;32m5\033[0m: Stampa Avversario.\n");
         printf("\033[92mScelta:\033[0m ");
         scanf("%hd", &sceltaDuello);
         puliziaBuffer();
+        system("clear");
+
+        printf("*-----------------------------------------*\n");
+        printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
+        printf("*-----------------------------------------*\n\n");
 
         switch (sceltaDuello)
         {
         case 1:
-
+            win = combatti(pGiocatore, pAbitante);
             break;
         case 2:
-
+            win = scappa(pGiocatore, pAbitante);
             break;
         case 3:
             win = potereSpeciale(pGiocatore);
+            break;
+        case 4:
+            stampaGiocatore(pGiocatore);
+            break;
+        case 5:
+            stampaAbitante(pAbitante);
             break;
         default:
             printf("\033[1;31mAttenzione!\033[1;0m Cosa stai cercando di fare?!\n");
             break;
         }
 
-    } while ((sceltaDuello != 0 && sceltaDuello >= 4) && win == 0);
+    } while ((sceltaDuello != 0 && sceltaDuello >= 6) || win == 0);
+}
+
+// Ritorna 1 se l'avversario è stato sconfitto, altrimenti 0
+static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
+{
+
+    sleep(2);
+    int dadoAvversario = rand() % 7;
+    printf("\n\033[0;31mDado Avversario\033[0m: %d\n", dadoAvversario);
+    sleep(2);
+    int dadoGiocatore = rand() % 7;
+    printf("\n\033[92mDado Giocatore:\033[0m %d\n", dadoGiocatore);
+
+    if (dadoGiocatore >= dadoAvversario)
+    {
+    }
+}
+
+// Ritorna 1 se il player è scappato, altrimenti 0
+static int scappa(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
+{
+    int dado = rand() % 7;
+    sleep(2);
+    printf("\n\033[92mDado:\033[0m %d\n", dado);
+    sleep(1);
+
+    if (dado <= pGiocatore->mente)
+    {
+        if (pGiocatore->posizione->zonaPrecedente == NULL)
+        {
+            printf("\033[1;32mSei riuscito a scappare!\033[0;0m\n");
+            return 1;
+        }
+        else
+        {
+            pGiocatore->posizione = pGiocatore->posizione->zonaPrecedente;
+            printf("\033[1;32mSei riuscito a scappare!\033[0;37m Torni alla zona precedente: \033[1;37m%s\033[0m\n", getTipoZona(pGiocatore->posizione->tipoZona));
+            return 1;
+        }
+    }
+    else
+    {
+        int attaccoTot = (pAbitante->dadiAttacco) - (int)(floor(pGiocatore->dadiDifesa / 2));
+        pGiocatore->pVita -= (attaccoTot > pGiocatore->pVita) ? pGiocatore->pVita : attaccoTot;
+        printf("\n\033[0;37m\033[1;31m%s \033[1;37mti ha attaccato!\n\033[1;31m -%d Punti Vita\033[0m\n", pAbitante->nome, attaccoTot);
+        return 0;
+    }
 }
 
 // Ritorna 1 se l'abitante è stato sconfitto, altrimenti 0
