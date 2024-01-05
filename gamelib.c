@@ -98,9 +98,9 @@ void impostaGioco()
     for (i = 0; i < nGiocatori; i++)
     {
         creaGiocatore(&giocatori[i], i);
+        sleep(2);
     }
     // Menu Mappa
-    sleep(2);
     system("clear");
     unsigned short sceltaMappa = 0;
     do
@@ -325,18 +325,6 @@ static void stampaGiocatore(Giocatore *pGiocatore)
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pGiocatore->pVita);
     printf("\033[1;34mPotere Speciale\033[1;0m: %d\n", pGiocatore->potereSpeciale);
     printf("\033[1;35mMente\033[1;0m: %d\n", pGiocatore->mente);
-}
-
-static void cancellaGiocatore(Giocatore *pGiocatore)
-{
-
-    pGiocatore->dadiAttacco = 0;
-    pGiocatore->dadiDifesa = 0;
-    pGiocatore->pVita = 0;
-    pGiocatore->mente = 0;
-    pGiocatore->potereSpeciale = 0;
-    pGiocatore->classeGiocatore = -1;
-    free(pGiocatore);
 }
 
 static void generaMappa()
@@ -722,7 +710,7 @@ static void turno(Giocatore *pGiocatore)
         if (pGiocatore->pVita <= 0)
         {
             printf("\n\033[1;37m%s\033[1;31m è stato sconfitto...\n\n\033[0m", pGiocatore->nomeGiocatore);
-            sconfittaGiocatore(pGiocatore);
+            cancellaGiocatore(pGiocatore);
             return;
         }
         printf("\n\033[1;37mScegli cosa fare\033[1;0m:\n");
