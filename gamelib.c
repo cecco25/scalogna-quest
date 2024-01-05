@@ -985,7 +985,7 @@ static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitant
     } while ((sceltaDuello != 0 && sceltaDuello >= 6) || win == 0);
 }
 
-// Ritorna 1 se l'avversario è stato sconfitto, altrimenti 0
+// Ritorna 1 alla fine del combattimento
 static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 {
     DadoCombattimento dadiAttaccoGiocatore[pGiocatore->dadiAttacco];
@@ -993,8 +993,6 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 
     DadoCombattimento dadiAttaccoAbitante[pAbitante->dadiAttacco];
     DadoCombattimento dadiDifesaAbitante[pAbitante->dadiDifesa];
-
-    short fineCombattimento = 0;
 
     system("clear");
     do
@@ -1047,7 +1045,7 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
             {
 
                 pAbitante->pVita -= dannoTot - difesaTot;
-                printf("\n\033[1;31m-%d \033[1;37mPunti Vita\033[0m\n", (dannoTot - difesaTot));
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita all'avversario\033[0m\n", (dannoTot - difesaTot));
             }
             else
             {
@@ -1091,7 +1089,7 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
             {
 
                 pGiocatore->pVita -= dannoTot - difesaTot;
-                printf("\n\033[1;31m-%d \033[1;37mPunti Vita\033[0m\n", (dannoTot - difesaTot));
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita al giocatore\033[0m\n", (dannoTot - difesaTot));
             }
             else
             {
@@ -1105,7 +1103,12 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
         system("clear");
     } while (pGiocatore->pVita > 0 && pAbitante->pVita > 0);
 
-    return 0;
+    if (pAbitante->pVita <= 0)
+    {
+        printf("\n\033[1;32mComplimenti! Hai sconfitto \033[1;31m%s\033[0m.\n", pAbitante->nome);
+        sconfittaAbitante(pAbitante);
+    }
+    return 1;
 }
 
 static char *getDadoCombattimento(DadoCombattimento dado)
@@ -1221,6 +1224,11 @@ static void stampaAbitante(AbitanteDelleSegrete *pAbitante)
     printf("\033[1;36mDef\033[1;0m: %d\n", pAbitante->dadiDifesa);
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pAbitante->pVita);
     // printf("\033[1;33mZona\033[1;0m: %s\n", getTipoZona(pAbitante->posizione->tipoZona));
+}
+
+static void sconfittaAbitante(AbitanteDelleSegrete *pAbitante)
+{
+    free(pAbitante);
 }
 
 static void puliziaBuffer()
