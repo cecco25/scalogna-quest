@@ -40,6 +40,16 @@ typedef enum TipoPorta
     PORTA_DA_SCASSINARE
 } TipoPorta;
 
+typedef enum DadoCombattimento
+{
+    TESCHIO1,
+    TESCHIO2,
+    TESCHIO3,
+    SCUDO_BIANCO1,
+    SCUDO_BIANCO2,
+    SCUDO_NERO
+} DadoCombattimento;
+
 typedef struct ZonaSegrete
 {
     struct ZonaSegrete *zonaSuccessiva;

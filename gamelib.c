@@ -53,6 +53,7 @@ static char *getTipoZona(TipoZona tipo);
 static char *getTipoTesoro(TipoTesoro tipo);
 static char *getTipoPorta(TipoPorta tipo);
 static char *getClasseGiocatore(ClasseGiocatore classe);
+static char *getDadoCombattimento(DadoCombattimento dado);
 
 // Pulizia Buffer
 int c = 0;
@@ -987,16 +988,6 @@ static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitant
 // Ritorna 1 se l'avversario è stato sconfitto, altrimenti 0
 static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 {
-    typedef enum DadoCombattimento
-    {
-        TESCHIO1,
-        TESCHIO2,
-        TESCHIO3,
-        SCUDO_BIANCO1,
-        SCUDO_BIANCO2,
-        SCUDO_NERO
-    } DadoCombattimento;
-
     DadoCombattimento dadiAttaccoGiocatore[pGiocatore->dadiAttacco];
     DadoCombattimento dadiDifesaGiocatore[pGiocatore->dadiDifesa];
 
@@ -1006,48 +997,142 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
     short fineCombattimento = 0;
 
     system("clear");
-    printf("*-----------------------------------------*\n");
-    printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
-    printf("*-----------------------------------------*\n\n");
-
     do
     {
+        printf("*-----------------------------------------*\n");
+        printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
+        printf("*-----------------------------------------*\n\n");
         sleep(2);
         int dadoAvversario = rand() % 6 + 1;
         printf("\n\033[0;31mDado Avversario\033[0m: %d\n", dadoAvversario);
         sleep(2);
         int dadoGiocatore = rand() % 6 + 1;
-        printf("\n\033[92mDado Giocatore:\033[0m %d\n", dadoGiocatore);
+        printf("\033[92mDado Giocatore:\033[0m %d\n", dadoGiocatore);
         sleep(1);
 
         if (dadoGiocatore >= dadoAvversario)
         {
-            printf("\nInizia %s\n", pGiocatore->nomeGiocatore);
+            printf("\nInizia \033[1;37m%s\033[0m\n", pGiocatore->nomeGiocatore);
+            printf("\n\033[1;31m---ATTACCO GIOCATORE---\033[0m\n");
 
+            short dannoTot = 0;
+
+            // Tiro dei dadi attacco del giocatore
             for (int i = 0; i < pGiocatore->dadiAttacco; i++)
             {
                 int atk = rand() % 6;
                 dadiAttaccoGiocatore[i] = atk;
+                printf("%s\n", getDadoCombattimento(dadiAttaccoGiocatore[i]));
+
+                dannoTot += (dadiAttaccoGiocatore[i] == TESCHIO1 || dadiAttaccoGiocatore[i] == TESCHIO2 || dadiAttaccoGiocatore[i] == TESCHIO3) ? 1 : 0;
             }
+
+            printf("\n\033[1;36m---DIFESA AVVERSARIO---\033[0m\n");
+
+            short difesaTot = 0;
+
+            // Tiro dedi dadi difesa dell'avversario
             for (int j = 0; j < pAbitante->dadiDifesa; j++)
             {
                 int def = rand() % 6;
                 dadiDifesaAbitante[j] = def;
+                printf("%s\n", getDadoCombattimento(dadiDifesaAbitante[j]));
+
+                difesaTot += (dadiDifesaAbitante[j] == SCUDO_NERO) ? 1 : 0;
+            }
+
+            printf("\nDanno: %d - Difesa: %d\n", dannoTot, difesaTot);
+
+            if ((dannoTot - difesaTot) > 0)
+            {
+
+                pAbitante->pVita -= dannoTot - difesaTot;
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita\033[0m\n", (dannoTot - difesaTot));
+            }
+            else
+            {
+                printf("\n\033[1;36mL'avversario si è difeso!\033[0m\n");
             }
         }
         else
         {
-            printf("\nInizia %s\n", pAbitante->nome);
+            printf("\nInizia \033[1;37m%s\033[0m\n", pAbitante->nome);
+            printf("\n\033[1;31m---ATTACCO AVVERSARIO---\033[0m\n");
 
+            short dannoTot = 0;
+
+            // Tiro dei dadi attacco dell'abitante
             for (int i = 0; i < pAbitante->dadiAttacco; i++)
             {
                 int atk = rand() % 6;
                 dadiAttaccoAbitante[i] = atk;
+                printf("%s\n", getDadoCombattimento(dadiAttaccoAbitante[i]));
+
+                dannoTot += (dadiAttaccoAbitante[i] == TESCHIO1 || dadiAttaccoAbitante[i] == TESCHIO2 || dadiAttaccoAbitante[i] == TESCHIO3) ? 1 : 0;
+            }
+
+            printf("\n\033[1;36m---DIFESA GIOCATORE---\033[0m\n");
+
+            short difesaTot = 0;
+
+            // Tiro dedi dadi difesa del giocatore
+            for (int j = 0; j < pGiocatore->dadiDifesa; j++)
+            {
+                int def = rand() % 6;
+                dadiDifesaGiocatore[j] = def;
+                printf("%s\n", getDadoCombattimento(dadiDifesaGiocatore[j]));
+
+                difesaTot += (dadiDifesaGiocatore[j] == SCUDO_BIANCO1 || dadiDifesaGiocatore[j] == SCUDO_BIANCO2) ? 1 : 0;
+            }
+
+            printf("\nDanno: %d - Difesa: %d\n", dannoTot, difesaTot);
+
+            if ((dannoTot - difesaTot) > 0)
+            {
+
+                pGiocatore->pVita -= dannoTot - difesaTot;
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita\033[0m\n", (dannoTot - difesaTot));
+            }
+            else
+            {
+                printf("\n\033[1;36mSei riuscito a difenderti!\033[0m\n");
             }
         }
+
+        printf("\n\033[1;37mInvia qualcosa per continuare il combattimento\033[0m\n");
+        getchar();
+        puliziaBuffer();
+        system("clear");
     } while (pGiocatore->pVita > 0 && pAbitante->pVita > 0);
 
     return 0;
+}
+
+static char *getDadoCombattimento(DadoCombattimento dado)
+{
+    switch (dado)
+    {
+    case TESCHIO1:
+        return "Teschio";
+
+    case TESCHIO2:
+        return "Teschio";
+
+    case TESCHIO3:
+        return "Teschio";
+
+    case SCUDO_BIANCO1:
+        return "Scudo Bianco";
+
+    case SCUDO_BIANCO2:
+        return "Scudo Bianco";
+
+    case SCUDO_NERO:
+        return "Scudo Nero";
+
+    default:
+        return "0";
+    }
 }
 
 // Ritorna 1 se il player è scappato, altrimenti 0
