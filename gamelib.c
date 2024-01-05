@@ -46,7 +46,6 @@ static int potereSpeciale(Giocatore *pGiocatore);
 static void stampaZona(ZonaSegrete *zona);
 static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona);
 static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
-static void sconfittaGiocatore(Giocatore *pGiocatore);
 static void sconfittaAbitante(AbitanteDelleSegrete *pAbitante);
 
 // Conversione enum a testo
@@ -284,6 +283,36 @@ static void sacrificaPunti(Giocatore *pGiocatore)
     default:
         printf("\n\033[1;37mNotifica\033[1;0m: Hai rifiutato di sacrificare i punti.\n");
         break;
+    }
+}
+
+static void cancellaGiocatore(Giocatore *pGiocatore)
+{
+    free(pGiocatore->posizione);
+
+    // Trova l'indice del giocatore nell'array
+    int indice = -1;
+    for (int i = 0; i < nGiocatori; ++i)
+    {
+        if (&giocatori[i] == pGiocatore)
+        {
+            indice = i;
+            break;
+        }
+    }
+
+    if (indice != -1)
+    {
+        // Sposta gli altri giocatori nell'array per coprire lo spazio lasciato dal giocatore eliminato
+        for (int i = indice; i < nGiocatori - 1; ++i)
+        {
+            giocatori[i] = giocatori[i + 1];
+        }
+
+        nGiocatori--;
+
+        // Setta a zero la struct del giocatore rimosso
+        memset(&giocatori[nGiocatori], 0, sizeof(Giocatore));
     }
 }
 
@@ -692,6 +721,7 @@ static void turno(Giocatore *pGiocatore)
     {
         if (pGiocatore->pVita <= 0)
         {
+            printf("\n\033[1;37m%s\033[1;31m è stato sconfitto...\n\n\033[0m", pGiocatore->nomeGiocatore);
             sconfittaGiocatore(pGiocatore);
             return;
         }
@@ -1070,37 +1100,6 @@ static void stampaAbitante(AbitanteDelleSegrete *pAbitante)
     printf("\033[1;36mDef\033[1;0m: %d\n", pAbitante->dadiDifesa);
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pAbitante->pVita);
     // printf("\033[1;33mZona\033[1;0m: %s\n", getTipoZona(pAbitante->posizione->tipoZona));
-}
-
-static void sconfittaGiocatore(Giocatore *pGiocatore)
-{
-    printf("\n\033[1;37m%s\033[1;31m è stato sconfitto...\n\n\033[0m", pGiocatore->nomeGiocatore);
-    free(pGiocatore->posizione);
-
-    // Trova l'indice del giocatore nell'array
-    int indice = -1;
-    for (int i = 0; i < nGiocatori; ++i)
-    {
-        if (&giocatori[i] == pGiocatore)
-        {
-            indice = i;
-            break;
-        }
-    }
-
-    if (indice != -1)
-    {
-        // Sposta gli altri giocatori nell'array per coprire lo spazio lasciato dal giocatore eliminato
-        for (int i = indice; i < nGiocatori - 1; ++i)
-        {
-            giocatori[i] = giocatori[i + 1];
-        }
-
-        nGiocatori--;
-
-        // Setta a zero la struct del giocatore rimosso
-        memset(&giocatori[nGiocatori], 0, sizeof(Giocatore));
-    }
 }
 
 static void puliziaBuffer()
