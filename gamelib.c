@@ -724,8 +724,8 @@ static void turno(Giocatore *pGiocatore)
         printf("\033[92mScelta:\033[0m ");
         scanf("%hd", &sceltaTurno);
         puliziaBuffer();
-        system("clear");
 
+        system("clear");
         printf("*-----------------------------------------*\n");
         printf("\n\t\033[1;33m---- Turno %d ----\033[1;0m\n", nTurno);
         printf("\n\tE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
@@ -853,7 +853,7 @@ static void apriPorta(Giocatore *pGiocatore)
     else if (porta == PORTA_DA_SCASSINARE)
     {
         printf("\n\033[1;37mLa porta va scassinata, vediamo se ci riuscirai...\033[1;0m\n");
-        int dado = rand() % 6;
+        int dado = rand() % 6 + 1;
         sleep(2);
         printf("\033[92mDado:\033[0m %d\n", dado);
         sleep(1);
@@ -953,8 +953,8 @@ static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitant
         printf("\033[92mScelta:\033[0m ");
         scanf("%hd", &sceltaDuello);
         puliziaBuffer();
-        system("clear");
 
+        system("clear");
         printf("*-----------------------------------------*\n");
         printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
         printf("*-----------------------------------------*\n\n");
@@ -962,7 +962,7 @@ static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitant
         switch (sceltaDuello)
         {
         case 1:
-            pGiocatore->pVita = 0;
+            win = combatti(pGiocatore, pAbitante);
             break;
         case 2:
             win = scappa(pGiocatore, pAbitante);
@@ -987,18 +987,66 @@ static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitant
 // Ritorna 1 se l'avversario è stato sconfitto, altrimenti 0
 static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 {
-
-    /*sleep(2);
-    int dadoAvversario = rand() % 7;
-    printf("\n\033[0;31mDado Avversario\033[0m: %d\n", dadoAvversario);
-    sleep(2);
-    int dadoGiocatore = rand() % 7;
-    printf("\n\033[92mDado Giocatore:\033[0m %d\n", dadoGiocatore);
-
-    if (dadoGiocatore >= dadoAvversario)
+    typedef enum DadoCombattimento
     {
+        TESCHIO1,
+        TESCHIO2,
+        TESCHIO3,
+        SCUDO_BIANCO1,
+        SCUDO_BIANCO2,
+        SCUDO_NERO
+    } DadoCombattimento;
 
-    }*/
+    DadoCombattimento dadiAttaccoGiocatore[pGiocatore->dadiAttacco];
+    DadoCombattimento dadiDifesaGiocatore[pGiocatore->dadiDifesa];
+
+    DadoCombattimento dadiAttaccoAbitante[pAbitante->dadiAttacco];
+    DadoCombattimento dadiDifesaAbitante[pAbitante->dadiDifesa];
+
+    short fineCombattimento = 0;
+
+    system("clear");
+    printf("*-----------------------------------------*\n");
+    printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
+    printf("*-----------------------------------------*\n\n");
+
+    do
+    {
+        sleep(2);
+        int dadoAvversario = rand() % 6 + 1;
+        printf("\n\033[0;31mDado Avversario\033[0m: %d\n", dadoAvversario);
+        sleep(2);
+        int dadoGiocatore = rand() % 6 + 1;
+        printf("\n\033[92mDado Giocatore:\033[0m %d\n", dadoGiocatore);
+        sleep(1);
+
+        if (dadoGiocatore >= dadoAvversario)
+        {
+            printf("\nInizia %s\n", pGiocatore->nomeGiocatore);
+
+            for (int i = 0; i < pGiocatore->dadiAttacco; i++)
+            {
+                int atk = rand() % 6;
+                dadiAttaccoGiocatore[i] = atk;
+            }
+            for (int j = 0; j < pAbitante->dadiDifesa; j++)
+            {
+                int def = rand() % 6;
+                dadiDifesaAbitante[j] = def;
+            }
+        }
+        else
+        {
+            printf("\nInizia %s\n", pAbitante->nome);
+
+            for (int i = 0; i < pAbitante->dadiAttacco; i++)
+            {
+                int atk = rand() % 6;
+                dadiAttaccoAbitante[i] = atk;
+            }
+        }
+    } while (pGiocatore->pVita > 0 && pAbitante->pVita > 0);
+
     return 0;
 }
 
