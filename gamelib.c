@@ -170,6 +170,7 @@ void gioca()
                 if (nGiocatori == 0)
                 {
                     printf("\n\033[1;31mLA PARTITA SI CONCLUDE CON %d TURNI, TUTTI I GIOCATORI SONO STATI SCONFITTI...\033[0m\n", nTurno);
+                    fineGioco = 1;
                     break;
                 }
             }
