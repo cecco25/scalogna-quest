@@ -167,6 +167,11 @@ void gioca()
             for (int i = 0; i < nGiocatori; i++)
             {
                 turno(&giocatori[i]);
+                if (nGiocatori == 0)
+                {
+                    printf("\n\033[1;31mLA PARTITA SI CONCLUDE CON %d TURNI, TUTTI I GIOCATORI SONO STATI SCONFITTI...\033[0m\n", nTurno);
+                    break;
+                }
             }
         }
         resetFineGioco();
@@ -293,8 +298,6 @@ static void sacrificaPunti(Giocatore *pGiocatore)
 
 static void cancellaGiocatore(Giocatore *pGiocatore)
 {
-    // free(pGiocatore->posizione);
-
     // Trova l'indice del giocatore nell'array
     int indice = -1;
     for (int i = 0; i < nGiocatori; ++i)
@@ -841,7 +844,7 @@ static int avanza(Giocatore *pGiocatore)
         puliziaBuffer();
         duelloAbitante(pGiocatore, abitante);
     }
-    if (pGiocatore->posizione->zonaSuccessiva == NULL)
+    if (pGiocatore->posizione->zonaSuccessiva == NULL && pGiocatore->pVita > 0)
     {
         printf("\n\033[1;33mLA PARTITA SI CONCLUDE CON %d TURNI, IL VINCITORE E' \033[1;37m%s\033[0m\n", nTurno, pGiocatore->nomeGiocatore);
         fineGioco = 1;
@@ -1027,7 +1030,7 @@ static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitant
     } while ((sceltaDuello != 0 && sceltaDuello >= 6) || win == 0);
 }
 
-// Ritorna 1 alla fine del combattimento
+// Ritorna 1 se il giocatore ha sconfitto l'abitante, altrimenti 0
 static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 {
     DadoCombattimento dadiAttaccoGiocatore[pGiocatore->dadiAttacco];
@@ -1240,6 +1243,11 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
     {
         printf("\n\033[1;32mComplimenti! Hai sconfitto \033[1;31m%s\033[0m.\n", pAbitante->nome);
         sconfittaAbitante(pAbitante);
+    }
+
+    if (pGiocatore->pVita <= 0)
+    {
+        return 0;
     }
     return 1;
 }
