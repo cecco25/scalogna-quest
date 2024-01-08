@@ -62,6 +62,7 @@ static void puliziaBuffer();
 unsigned short isImpostato = 0; // Controlla se il gioco è già stato impostato
 unsigned short nGiocatori = 0;
 unsigned short nTurno = 0;
+unsigned short fineGioco = 0;
 
 ZonaSegrete *pFirst = NULL;
 ZonaSegrete *pLast = NULL;
@@ -123,6 +124,7 @@ void impostaGioco()
             stampaMappa();
             break;
         case 2:
+            system("clear");
             inserisciZona();
             stampaMappa();
             break;
@@ -131,6 +133,7 @@ void impostaGioco()
             stampaMappa();
             break;
         case 4:
+            system("clear");
             stampaMappa();
             break;
         case 5:
@@ -156,7 +159,6 @@ void gioca()
         printf("\n\033[1;33mGioco impostato correttamente! Preparati a giocare...\033[0m\n");
         sleep(2);
         system("clear");
-        unsigned short fineGioco = 0;
         while (fineGioco != 1)
         {
             nTurno++;
@@ -736,12 +738,21 @@ static void turno(Giocatore *pGiocatore)
         {
         case 0:
             system("clear");
+            printf("\n\033[1;37mHai passato il turno\033[0m\n");
             break;
         case 1:
             if (avanzato == 0)
             {
-                avanzato = avanza(pGiocatore);
-                azioni++;
+                if (azioni <= 3)
+                {
+
+                    avanzato = avanza(pGiocatore);
+                    azioni++;
+                }
+                else
+                {
+                    printf("\n\033[1;31mAttenzione!\033[1;37m Hai raggiunto il numero massimo di azioni per questo turno.\n");
+                }
             }
             else
             {
@@ -749,8 +760,15 @@ static void turno(Giocatore *pGiocatore)
             }
             break;
         case 2:
-            indietreggia(pGiocatore);
-            azioni++;
+            if (azioni <= 3)
+            {
+                indietreggia(pGiocatore);
+                azioni++;
+            }
+            else
+            {
+                printf("\n\033[1;31mAttenzione!\033[1;37m Hai raggiunto il numero massimo di azioni per questo turno.\n");
+            }
             break;
         case 3:
             stampaGiocatore(pGiocatore);
@@ -759,12 +777,28 @@ static void turno(Giocatore *pGiocatore)
             stampaZona(pGiocatore->posizione);
             break;
         case 5:
-            apriPorta(pGiocatore);
-            azioni++;
+            if (azioni <= 3)
+            {
+
+                apriPorta(pGiocatore);
+                azioni++;
+            }
+            else
+            {
+                printf("\n\033[1;31mAttenzione!\033[1;37m Hai raggiunto il numero massimo di azioni per questo turno.\n");
+            }
             break;
         case 6:
-            prendiTesoro(pGiocatore);
-            azioni++;
+            if (azioni <= 3)
+            {
+
+                prendiTesoro(pGiocatore);
+                azioni++;
+            }
+            else
+            {
+                printf("\n\033[1;31mAttenzione!\033[1;37m Hai raggiunto il numero massimo di azioni per questo turno.\n");
+            }
             break;
         default:
             printf("\033[1;31mAttenzione!\033[1;0m Cosa stai cercando di fare?!\n");
@@ -803,6 +837,11 @@ static int avanza(Giocatore *pGiocatore)
         getchar();
         puliziaBuffer();
         duelloAbitante(pGiocatore, abitante);
+    }
+    if (pGiocatore->posizione->zonaSuccessiva == NULL)
+    {
+        printf("\nHa vinto %s\n", pGiocatore->nomeGiocatore);
+        fineGioco = 1;
     }
     return 1;
 }
@@ -873,7 +912,7 @@ static void apriPorta(Giocatore *pGiocatore)
             {
                 // 10% di probabilità
                 pGiocatore->posizione = pFirst;
-                printf("\n\033[1;37mTorni alla prima zona dellle segrete: %s", getTipoZona(pFirst->tipoZona));
+                printf("\n\033[1;37mTorni alla prima zona dellle segrete: %s\n", getTipoZona(pFirst->tipoZona));
             }
             else if (r < 60)
             {
