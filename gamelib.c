@@ -598,7 +598,7 @@ static void stampaMappa()
 
 static void chiudiMappa()
 {
-    if (dimensioneLista() >= 2)
+    if (dimensioneLista() >= 15)
     {
         isImpostato = 1;
         system("clear");
