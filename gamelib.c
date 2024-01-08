@@ -47,6 +47,7 @@ static void stampaZona(ZonaSegrete *zona);
 static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona);
 static void stampaAbitante(AbitanteDelleSegrete *pAbitante);
 static void sconfittaAbitante(AbitanteDelleSegrete *pAbitante);
+static void resetFineGioco();
 
 // Conversione enum a testo
 static char *getTipoZona(TipoZona tipo);
@@ -168,6 +169,7 @@ void gioca()
                 turno(&giocatori[i]);
             }
         }
+        resetFineGioco();
     }
     else
     {
@@ -592,7 +594,7 @@ static void stampaMappa()
 
 static void chiudiMappa()
 {
-    if (dimensioneLista() >= 15)
+    if (dimensioneLista() >= 2)
     {
         isImpostato = 1;
         system("clear");
@@ -710,6 +712,8 @@ static void turno(Giocatore *pGiocatore)
 
     do
     {
+        if (fineGioco == 1)
+            break;
         if (pGiocatore->pVita <= 0)
         {
             printf("\n\033[1;37m%s\033[1;31m è stato sconfitto...\n\n\033[0m", pGiocatore->nomeGiocatore);
@@ -737,7 +741,6 @@ static void turno(Giocatore *pGiocatore)
         switch (sceltaTurno)
         {
         case 0:
-            // system("clear");
             printf("\n\033[1;37mHai passato il turno\033[0m\n");
             break;
         case 1:
@@ -840,7 +843,7 @@ static int avanza(Giocatore *pGiocatore)
     }
     if (pGiocatore->posizione->zonaSuccessiva == NULL)
     {
-        printf("\nHa vinto %s\n", pGiocatore->nomeGiocatore);
+        printf("\n\033[1;33mLA PARTITA SI CONCLUDE CON %d TURNI, IL VINCITORE E' \033[1;37m%s\033[0m\n", nTurno, pGiocatore->nomeGiocatore);
         fineGioco = 1;
     }
     return 1;
@@ -1082,7 +1085,14 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
             if ((dannoGiocatore - difesaAvversario) > 0)
             {
 
-                pAbitante->pVita -= dannoGiocatore - difesaAvversario;
+                if (pAbitante->pVita < (dannoGiocatore - difesaAvversario))
+                    pAbitante->pVita = 0;
+                else
+                {
+
+                    pAbitante->pVita -= dannoGiocatore - difesaAvversario;
+                }
+
                 printf("\n\033[1;31m-%d \033[1;37mPunti Vita all'avversario\033[0m\n", (dannoGiocatore - difesaAvversario));
             }
             else
@@ -1121,8 +1131,10 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 
             if ((dannoAvversario - difesaGiocatore) > 0)
             {
-
-                pGiocatore->pVita -= dannoAvversario - difesaGiocatore;
+                if (pGiocatore->pVita < (dannoAvversario - difesaGiocatore))
+                    pGiocatore->pVita = 0;
+                else
+                    pGiocatore->pVita -= dannoAvversario - difesaGiocatore;
                 printf("\n\033[1;31m-%d \033[1;37mPunti Vita al giocatore\033[0m\n", (dannoAvversario - difesaGiocatore));
             }
             else
@@ -1163,8 +1175,10 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 
             if ((dannoAvversario - difesaGiocatore) > 0)
             {
-
-                pGiocatore->pVita -= dannoAvversario - difesaGiocatore;
+                if (pGiocatore->pVita < (dannoAvversario - difesaGiocatore))
+                    pGiocatore->pVita = 0;
+                else
+                    pGiocatore->pVita -= dannoAvversario - difesaGiocatore;
                 printf("\n\033[1;31m-%d \033[1;37mPunti Vita al giocatore\033[0m\n", (dannoAvversario - difesaGiocatore));
             }
             else
@@ -1202,8 +1216,10 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 
             if ((dannoGiocatore - difesaAvversario) > 0)
             {
-
-                pAbitante->pVita -= dannoGiocatore - difesaAvversario;
+                if (pAbitante->pVita < (dannoGiocatore - difesaAvversario))
+                    pAbitante->pVita = 0;
+                else
+                    pAbitante->pVita -= dannoGiocatore - difesaAvversario;
                 printf("\n\033[1;31m-%d \033[1;37mPunti Vita all'avversario\033[0m\n", (dannoGiocatore - difesaAvversario));
             }
             else
@@ -1211,6 +1227,8 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
                 printf("\n\033[1;36mL'avversario si è difeso!\033[0m\n");
             }
         }
+
+        printf("\nPV Giocatore: %d\nPV Abitante: %d\n", pGiocatore->pVita, pAbitante->pVita);
 
         printf("\n\033[1;37mInvia qualcosa per continuare il combattimento\033[0m\n");
         getchar();
@@ -1344,6 +1362,19 @@ static void stampaAbitante(AbitanteDelleSegrete *pAbitante)
 static void sconfittaAbitante(AbitanteDelleSegrete *pAbitante)
 {
     free(pAbitante);
+}
+
+static void resetFineGioco()
+{
+    isImpostato = 0;
+    cancellaMappa();
+    for (int i = 0; i < 4; i++)
+    {
+        memset(&giocatori[i], 0, sizeof(Giocatore));
+    }
+    nGiocatori = 0;
+    nTurno = 0;
+    fineGioco = 0;
 }
 
 static void puliziaBuffer()
