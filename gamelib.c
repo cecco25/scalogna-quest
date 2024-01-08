@@ -291,7 +291,7 @@ static void sacrificaPunti(Giocatore *pGiocatore)
 
 static void cancellaGiocatore(Giocatore *pGiocatore)
 {
-    free(pGiocatore->posizione);
+    // free(pGiocatore->posizione);
 
     // Trova l'indice del giocatore nell'array
     int indice = -1;
@@ -737,7 +737,7 @@ static void turno(Giocatore *pGiocatore)
         switch (sceltaTurno)
         {
         case 0:
-            system("clear");
+            // system("clear");
             printf("\n\033[1;37mHai passato il turno\033[0m\n");
             break;
         case 1:
@@ -1049,10 +1049,11 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 
         if (dadoGiocatore >= dadoAvversario)
         {
+            // TURNO GIOCATORE
             printf("\nInizia \033[1;37m%s\033[0m\n", pGiocatore->nomeGiocatore);
             printf("\n\033[1;31m---ATTACCO GIOCATORE---\033[0m\n");
 
-            short dannoTot = 0;
+            short dannoGiocatore = 0;
 
             // Tiro dei dadi attacco del giocatore
             for (int i = 0; i < pGiocatore->dadiAttacco; i++)
@@ -1061,12 +1062,12 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
                 dadiAttaccoGiocatore[i] = atk;
                 printf("%s\n", getDadoCombattimento(dadiAttaccoGiocatore[i]));
 
-                dannoTot += (dadiAttaccoGiocatore[i] == TESCHIO1 || dadiAttaccoGiocatore[i] == TESCHIO2 || dadiAttaccoGiocatore[i] == TESCHIO3) ? 1 : 0;
+                dannoGiocatore += (dadiAttaccoGiocatore[i] == TESCHIO1 || dadiAttaccoGiocatore[i] == TESCHIO2 || dadiAttaccoGiocatore[i] == TESCHIO3) ? 1 : 0;
             }
 
             printf("\n\033[1;36m---DIFESA AVVERSARIO---\033[0m\n");
 
-            short difesaTot = 0;
+            short difesaAvversario = 0;
 
             // Tiro dedi dadi difesa dell'avversario
             for (int j = 0; j < pAbitante->dadiDifesa; j++)
@@ -1075,42 +1076,38 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
                 dadiDifesaAbitante[j] = def;
                 printf("%s\n", getDadoCombattimento(dadiDifesaAbitante[j]));
 
-                difesaTot += (dadiDifesaAbitante[j] == SCUDO_NERO) ? 1 : 0;
+                difesaAvversario += (dadiDifesaAbitante[j] == SCUDO_NERO) ? 1 : 0;
             }
 
-            printf("\nDanno: %d - Difesa: %d\n", dannoTot, difesaTot);
-
-            if ((dannoTot - difesaTot) > 0)
+            if ((dannoGiocatore - difesaAvversario) > 0)
             {
 
-                pAbitante->pVita -= dannoTot - difesaTot;
-                printf("\n\033[1;31m-%d \033[1;37mPunti Vita all'avversario\033[0m\n", (dannoTot - difesaTot));
+                pAbitante->pVita -= dannoGiocatore - difesaAvversario;
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita all'avversario\033[0m\n", (dannoGiocatore - difesaAvversario));
             }
             else
             {
                 printf("\n\033[1;36mL'avversario si è difeso!\033[0m\n");
             }
-        }
-        else
-        {
-            printf("\nInizia \033[1;37m%s\033[0m\n", pAbitante->nome);
+
+            // TURNO AVVERSARIO
             printf("\n\033[1;31m---ATTACCO AVVERSARIO---\033[0m\n");
 
-            short dannoTot = 0;
+            short dannoAvversario = 0;
 
-            // Tiro dei dadi attacco dell'abitante
+            // Tiro dei dadi attacco dell'avversario
             for (int i = 0; i < pAbitante->dadiAttacco; i++)
             {
                 int atk = rand() % 6;
                 dadiAttaccoAbitante[i] = atk;
                 printf("%s\n", getDadoCombattimento(dadiAttaccoAbitante[i]));
 
-                dannoTot += (dadiAttaccoAbitante[i] == TESCHIO1 || dadiAttaccoAbitante[i] == TESCHIO2 || dadiAttaccoAbitante[i] == TESCHIO3) ? 1 : 0;
+                dannoAvversario += (dadiAttaccoAbitante[i] == TESCHIO1 || dadiAttaccoAbitante[i] == TESCHIO2 || dadiAttaccoAbitante[i] == TESCHIO3) ? 1 : 0;
             }
 
             printf("\n\033[1;36m---DIFESA GIOCATORE---\033[0m\n");
 
-            short difesaTot = 0;
+            short difesaGiocatore = 0;
 
             // Tiro dedi dadi difesa del giocatore
             for (int j = 0; j < pGiocatore->dadiDifesa; j++)
@@ -1119,20 +1116,99 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
                 dadiDifesaGiocatore[j] = def;
                 printf("%s\n", getDadoCombattimento(dadiDifesaGiocatore[j]));
 
-                difesaTot += (dadiDifesaGiocatore[j] == SCUDO_BIANCO1 || dadiDifesaGiocatore[j] == SCUDO_BIANCO2) ? 1 : 0;
+                difesaGiocatore += (dadiDifesaGiocatore[j] == SCUDO_BIANCO1 || dadiDifesaGiocatore[j] == SCUDO_BIANCO2) ? 1 : 0;
             }
 
-            printf("\nDanno: %d - Difesa: %d\n", dannoTot, difesaTot);
-
-            if ((dannoTot - difesaTot) > 0)
+            if ((dannoAvversario - difesaGiocatore) > 0)
             {
 
-                pGiocatore->pVita -= dannoTot - difesaTot;
-                printf("\n\033[1;31m-%d \033[1;37mPunti Vita al giocatore\033[0m\n", (dannoTot - difesaTot));
+                pGiocatore->pVita -= dannoAvversario - difesaGiocatore;
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita al giocatore\033[0m\n", (dannoAvversario - difesaGiocatore));
+            }
+            else
+            {
+                printf("\n\033[1;36mTi sei difeso!\033[0m\n");
+            }
+        }
+        else
+        {
+            printf("\nInizia \033[1;37m%s\033[0m\n", pAbitante->nome);
+            printf("\n\033[1;31m---ATTACCO AVVERSARIO---\033[0m\n");
+
+            short dannoAvversario = 0;
+
+            // Tiro dei dadi attacco dell'abitante
+            for (int i = 0; i < pAbitante->dadiAttacco; i++)
+            {
+                int atk = rand() % 6;
+                dadiAttaccoAbitante[i] = atk;
+                printf("%s\n", getDadoCombattimento(dadiAttaccoAbitante[i]));
+
+                dannoAvversario += (dadiAttaccoAbitante[i] == TESCHIO1 || dadiAttaccoAbitante[i] == TESCHIO2 || dadiAttaccoAbitante[i] == TESCHIO3) ? 1 : 0;
+            }
+
+            printf("\n\033[1;36m---DIFESA GIOCATORE---\033[0m\n");
+
+            short difesaGiocatore = 0;
+
+            // Tiro dedi dadi difesa del giocatore
+            for (int j = 0; j < pGiocatore->dadiDifesa; j++)
+            {
+                int def = rand() % 6;
+                dadiDifesaGiocatore[j] = def;
+                printf("%s\n", getDadoCombattimento(dadiDifesaGiocatore[j]));
+
+                difesaGiocatore += (dadiDifesaGiocatore[j] == SCUDO_BIANCO1 || dadiDifesaGiocatore[j] == SCUDO_BIANCO2) ? 1 : 0;
+            }
+
+            if ((dannoAvversario - difesaGiocatore) > 0)
+            {
+
+                pGiocatore->pVita -= dannoAvversario - difesaGiocatore;
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita al giocatore\033[0m\n", (dannoAvversario - difesaGiocatore));
             }
             else
             {
                 printf("\n\033[1;36mSei riuscito a difenderti!\033[0m\n");
+            }
+
+            printf("\n\033[1;31m---ATTACCO GIOCATORE---\033[0m\n");
+
+            short dannoGiocatore = 0;
+
+            // Tiro dei dadi attacco del giocatore
+            for (int i = 0; i < pGiocatore->dadiAttacco; i++)
+            {
+                int atk = rand() % 6;
+                dadiAttaccoGiocatore[i] = atk;
+                printf("%s\n", getDadoCombattimento(dadiAttaccoGiocatore[i]));
+
+                dannoGiocatore += (dadiAttaccoGiocatore[i] == TESCHIO1 || dadiAttaccoGiocatore[i] == TESCHIO2 || dadiAttaccoGiocatore[i] == TESCHIO3) ? 1 : 0;
+            }
+
+            printf("\n\033[1;36m---DIFESA AVVERSARIO---\033[0m\n");
+
+            short difesaAvversario = 0;
+
+            // Tiro dedi dadi difesa dell'avversario
+            for (int j = 0; j < pAbitante->dadiDifesa; j++)
+            {
+                int def = rand() % 6;
+                dadiDifesaAbitante[j] = def;
+                printf("%s\n", getDadoCombattimento(dadiDifesaAbitante[j]));
+
+                difesaAvversario += (dadiDifesaAbitante[j] == SCUDO_NERO) ? 1 : 0;
+            }
+
+            if ((dannoGiocatore - difesaAvversario) > 0)
+            {
+
+                pAbitante->pVita -= dannoGiocatore - difesaAvversario;
+                printf("\n\033[1;31m-%d \033[1;37mPunti Vita all'avversario\033[0m\n", (dannoGiocatore - difesaAvversario));
+            }
+            else
+            {
+                printf("\n\033[1;36mL'avversario si è difeso!\033[0m\n");
             }
         }
 
