@@ -61,7 +61,7 @@ int c = 0;
 static void puliziaBuffer();
 
 unsigned short isImpostato = 0; // Controlla se il gioco è già stato impostato
-unsigned short nGiocatori = 0;
+unsigned short nGiocatori = 0;  // Il numero di giocatori in partita
 unsigned short nTurno = 0;
 unsigned short fineGioco = 0;
 
@@ -75,6 +75,7 @@ void impostaGioco()
 
     if (isImpostato == 1)
     {
+        // Cancellazione impostazioni precedenti
         printf("\033[1;33m\nAvviso!\033[1;0m Il gioco aveva già delle impostazioni salvate, ora sono state eliminate.\n");
         isImpostato = 0;
         nGiocatori = 0;
@@ -103,6 +104,7 @@ void impostaGioco()
         creaGiocatore(&giocatori[i], i);
         sleep(2);
     }
+
     // Menu Mappa
     system("clear");
     unsigned short sceltaMappa = 0;
@@ -147,7 +149,7 @@ void impostaGioco()
     } while (sceltaMappa != 5 || isImpostato == 0);
     for (int i = 0; i < nGiocatori; i++)
     {
-        posizionaGiocatore(&giocatori[i]);
+        posizionaGiocatore(&giocatori[i]); // Posiziona tutti i giocatori nella prima zona della mappa
     }
 
     return;
@@ -163,7 +165,7 @@ void gioca()
         while (fineGioco != 1)
         {
             nTurno++;
-            mescolaGiocatori();
+            mescolaGiocatori(); // Mescola i giocatori per stabilire l'ordine di gioco nel turno
             for (int i = 0; i < nGiocatori; i++)
             {
                 turno(&giocatori[i]);
@@ -175,7 +177,7 @@ void gioca()
                 }
             }
         }
-        resetFineGioco();
+        resetFineGioco(); // Si resettano le variabili globali per permettere di impostare di nuovo il gioco
     }
     else
     {
@@ -202,10 +204,9 @@ static void creaGiocatore(Giocatore *pGiocatore, int i)
         system("clear");
         printf("\n\033[1;37mInserisci il nickname del giocatore n. %d\033[1;0m: ", i + 1); // Input del nome del giocatore
         fgets(pGiocatore->nomeGiocatore, 40, stdin);
-        // puliziaBuffer();
-        if (strcmp(pGiocatore->nomeGiocatore, "") == 0)
+        if (strlen(pGiocatore->nomeGiocatore) <= 1)
             printf("\n\033[31mAttenzione!\033[0m Inserisci un nome valido.");
-    } while (strcmp(pGiocatore->nomeGiocatore, "") == 0);
+    } while (strlen(pGiocatore->nomeGiocatore) <= 1);
     sceltaClasse(pGiocatore);
 }
 
@@ -310,6 +311,7 @@ static void cancellaGiocatore(Giocatore *pGiocatore)
         }
     }
 
+    // Se l'indice del giocatore è stato trovato
     if (indice != -1)
     {
         // Sposta gli altri giocatori nell'array per coprire lo spazio lasciato dal giocatore eliminato
@@ -332,8 +334,8 @@ static void stampaGiocatore(Giocatore *pGiocatore)
     printf("\033[1;31mAtk\033[1;0m: %d\n", pGiocatore->dadiAttacco);
     printf("\033[1;36mDef\033[1;0m: %d\n", pGiocatore->dadiDifesa);
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pGiocatore->pVita);
-    printf("\033[1;34mPotere Speciale\033[1;0m: %d\n", pGiocatore->potereSpeciale);
     printf("\033[1;35mMente\033[1;0m: %d\n", pGiocatore->mente);
+    printf("\033[1;34mPotere Speciale\033[1;0m: %d\n", pGiocatore->potereSpeciale);
 }
 
 static void generaMappa()
@@ -362,6 +364,7 @@ static void generaMappa()
     }
 }
 
+// Calcola la dimensione della mappa
 static int dimensioneLista()
 {
     int size = 0;
@@ -588,7 +591,6 @@ static void stampaMappa()
         int a = 0;
         do
         {
-            // printf("%d) Zona: %d - Indirizzo: %p - Prec: %p - Succ: %p\n", a, pScan->tipoZona, pScan, pScan->zonaPrecedente, pScan->zonaSuccessiva);
             printf("Zona %d) \033[1;37mTipo Zona\033[1;0m: %s - \033[1;37mTipo Tesoro\033[1;0m: %s - \033[1;37mTipo Porta\033[1;0m: %s\n", a, getTipoZona(pScan->tipoZona), getTipoTesoro(pScan->tipoTesoro), getTipoPorta(pScan->tipoPorta));
             pScan = pScan->zonaSuccessiva;
             a++;
@@ -690,25 +692,26 @@ static char *getClasseGiocatore(ClasseGiocatore classe)
 
 static void posizionaGiocatore(Giocatore *pGiocatore)
 {
-    pGiocatore->posizione = pFirst;
+    pGiocatore->posizione = pFirst; // Posiziona il giocatore nella prima zona della mappa
 }
 
 static void mescolaGiocatori()
 {
+    // Scorre gli inidici dei giocatori dall'ultimo al primo
     for (int i = nGiocatori - 1; i > 0; i--)
     {
-        int j = rand() % (i + 1);
-        Giocatore temp = giocatori[i];
-        giocatori[i] = giocatori[j];
-        giocatori[j] = temp;
+        int j = rand() % (i + 1);      // Randomizza un numero per assegnare la posizione
+        Giocatore temp = giocatori[i]; // Salva l'elemento corrente
+        giocatori[i] = giocatori[j];   // Sposto il giocatore all'indice random con quello corrente
+        giocatori[j] = temp;           // Il giocatore all'indice random diventa quello corrente, spostato precedentemente
     }
 }
 
 static void turno(Giocatore *pGiocatore)
 {
     short sceltaTurno = -1;
-    short azioni = 0;
-    short avanzato = 0;
+    short azioni = 0;   // Conto le azioni per limitarle
+    short avanzato = 0; // Controlla se il giocatore è gia andato avanti
     printf("*-----------------------------------------*\n");
     printf("\n\t\033[1;33m---- Turno %d ----\033[1;0m\n", nTurno);
     printf("\n\tE' il turno di \033[1;37m%s\033[1;0m\n", pGiocatore->nomeGiocatore);
@@ -718,6 +721,8 @@ static void turno(Giocatore *pGiocatore)
     {
         if (fineGioco == 1)
             break;
+
+        // Se il giocatore è stato sconfitto
         if (pGiocatore->pVita <= 0)
         {
             printf("\n\033[1;37m%s\033[1;31m è stato sconfitto...\n\n\033[0m", pGiocatore->nomeGiocatore);
@@ -825,11 +830,14 @@ static int avanza(Giocatore *pGiocatore)
         return 0;
     }
 
-    pGiocatore->posizione = pGiocatore->posizione->zonaSuccessiva;
+    pGiocatore->posizione = pGiocatore->posizione->zonaSuccessiva; // Sposto avanti il giocatore
     printf("\n\033[1;37mSei entrato in una nuova zona.\033[1;0m\n");
+
     // Generazione abitante
     int r = rand() % 3;
     int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
+
+    // Controllo se è l'ultima zona o l'abitante deve spawnare randomicamente
     if (pGiocatore->posizione->zonaSuccessiva == NULL || spawnAbitante == 1)
     {
         AbitanteDelleSegrete *abitante = creaAbitanteSegrete(pGiocatore->posizione);
@@ -843,8 +851,10 @@ static int avanza(Giocatore *pGiocatore)
         printf("\n\033[1;37mInvia qualcosa quando ti senti pronto...\033[1;0m\n");
         getchar();
         puliziaBuffer();
-        duelloAbitante(pGiocatore, abitante);
+        duelloAbitante(pGiocatore, abitante); // Inizio duello con abitante
     }
+
+    // Il giocatore è arrivato all'ultima zona
     if (pGiocatore->posizione->zonaSuccessiva == NULL && pGiocatore->pVita > 0)
     {
         printf("\n\033[1;33mLA PARTITA SI CONCLUDE CON %d TURNI, IL VINCITORE E' \033[1;37m%s\033[0m\n", nTurno, pGiocatore->nomeGiocatore);
@@ -855,16 +865,17 @@ static int avanza(Giocatore *pGiocatore)
 
 static void indietreggia(Giocatore *pGiocatore)
 {
+    // Se il  giocatore si trova nella prima zona non indietreggia
     if (pGiocatore->posizione->zonaPrecedente == NULL)
     {
         printf("\033[1;31mAttenzione!\033[1;0m Non puoi indietreggiare, non ci sono zone.\n");
         return;
     }
 
-    pGiocatore->posizione = pGiocatore->posizione->zonaPrecedente;
+    pGiocatore->posizione = pGiocatore->posizione->zonaPrecedente; // Sposto indietro il giocatore
     printf("\n\033[1;37mSei tornato indietro.\033[1;0m\n");
 
-    pGiocatore->posizione->tipoTesoro = rand() % 4;
+    pGiocatore->posizione->tipoTesoro = rand() % 4; // Rigenerazione tesoro
 
     int r = rand() % 3;
     int spawnAbitante = (r == 0) ? 1 : 2; // Generazione con 33% di probabilità
@@ -924,7 +935,7 @@ static void apriPorta(Giocatore *pGiocatore)
             else if (r < 60)
             {
                 // 50% di probabilità (da 10 a 59)
-                pGiocatore->pVita -= 1;
+                pGiocatore->pVita -= (pGiocatore->pVita >= 1) ? 1 : 0;
                 printf("\n\033[1;31m-1\033[1;37m Punto Vita\n");
             }
             else
@@ -950,7 +961,7 @@ static void prendiTesoro(Giocatore *pGiocatore)
 {
     if (pGiocatore->posizione->tipoTesoro == VELENO)
     {
-        pGiocatore->pVita -= 2;
+        pGiocatore->pVita -= (pGiocatore->pVita >= 2) ? 2 : (pGiocatore->pVita);
         printf("\n\033[1;37mNel tesoro c'era del \033[1;35mVeleno\033[1;37m!\n\033[1;31m-2 punti vita.\033[0m\n");
     }
     else if (pGiocatore->posizione->tipoTesoro == GUARIGIONE)
@@ -972,7 +983,7 @@ static void prendiTesoro(Giocatore *pGiocatore)
 
 static void stampaZona(ZonaSegrete *zona)
 {
-    unsigned short tesoro = (zona->tipoTesoro == NESSUN_TESORO) ? 0 : 1;
+    unsigned short tesoro = (zona->tipoTesoro == NESSUN_TESORO) ? 0 : 1; // Se 0 stampo no, se 1 stampo sì
     unsigned short porta = (zona->tipoPorta == NESSUNA_PORTA) ? 0 : 1;
     printf("\033[1;37mTipo Zona\033[1;0m: %s - \033[1;37mTesoro\033[1;0m: %s - \033[1;37mPorta\033[1;0m: %s\n", getTipoZona(zona->tipoZona), (tesoro == 0) ? "No" : "Sì", (porta == 0) ? "No" : "Sì");
 }
@@ -980,7 +991,7 @@ static void stampaZona(ZonaSegrete *zona)
 static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 {
     unsigned short sceltaDuello = 0;
-    int win = 0;
+    int win = 0; // Se 1 si esce dal duello
     system("clear");
     printf("*-----------------------------------------*\n");
     printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
@@ -1034,6 +1045,7 @@ static void duelloAbitante(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitant
 // Ritorna 1 se il giocatore ha sconfitto l'abitante, altrimenti 0
 static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 {
+    // Array di dadi da combattimento per abitante e giocatore, grandi quanto i loro dadi atk e def
     DadoCombattimento dadiAttaccoGiocatore[pGiocatore->dadiAttacco];
     DadoCombattimento dadiDifesaGiocatore[pGiocatore->dadiDifesa];
 
@@ -1047,6 +1059,7 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
         printf("\n\t\033[1;31m%s \033[1;33mVS \033[1;37m%s\033[1;0m\n", pAbitante->nome, pGiocatore->nomeGiocatore);
         printf("*-----------------------------------------*\n\n");
         sleep(2);
+        // Tiro dadi per scegliere chi inizia
         int dadoAvversario = rand() % 6 + 1;
         printf("\n\033[0;31mDado Avversario\033[0m: %d\n", dadoAvversario);
         sleep(2);
@@ -1054,15 +1067,16 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
         printf("\033[92mDado Giocatore:\033[0m %d\n", dadoGiocatore);
         sleep(1);
 
+        // Inizia il giocatore
         if (dadoGiocatore >= dadoAvversario)
         {
-            // TURNO GIOCATORE
+            // TURNO ATTACCO GIOCATORE
             printf("\nInizia \033[1;37m%s\033[0m\n", pGiocatore->nomeGiocatore);
             printf("\n\033[1;31m---ATTACCO GIOCATORE---\033[0m\n");
 
             short dannoGiocatore = 0;
 
-            // Tiro dei dadi attacco del giocatore
+            // Tiro dei attacco del giocatore
             for (int i = 0; i < pGiocatore->dadiAttacco; i++)
             {
                 int atk = rand() % 6;
@@ -1076,7 +1090,7 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 
             short difesaAvversario = 0;
 
-            // Tiro dedi dadi difesa dell'avversario
+            // Tiro dadi difesa dell'avversario
             for (int j = 0; j < pAbitante->dadiDifesa; j++)
             {
                 int def = rand() % 6;
@@ -1086,9 +1100,10 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
                 difesaAvversario += (dadiDifesaAbitante[j] == SCUDO_NERO) ? 1 : 0;
             }
 
+            // Controllo se l'avversario si è difeso
             if ((dannoGiocatore - difesaAvversario) > 0)
             {
-
+                // Controllo se il danno è maggiore dei punti vita per evitare che il numero sfori
                 if (pAbitante->pVita < (dannoGiocatore - difesaAvversario))
                     pAbitante->pVita = 0;
                 else
@@ -1104,12 +1119,12 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
                 printf("\n\033[1;36mL'avversario si è difeso!\033[0m\n");
             }
 
-            // TURNO AVVERSARIO
+            // TURNO ATTACCO AVVERSARIO
             printf("\n\033[1;31m---ATTACCO AVVERSARIO---\033[0m\n");
 
             short dannoAvversario = 0;
 
-            // Tiro dei dadi attacco dell'avversario
+            // Tiro dadi attacco dell'avversario
             for (int i = 0; i < pAbitante->dadiAttacco; i++)
             {
                 int atk = rand() % 6;
@@ -1123,7 +1138,7 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
 
             short difesaGiocatore = 0;
 
-            // Tiro dedi dadi difesa del giocatore
+            // Tiro dadi difesa del giocatore
             for (int j = 0; j < pGiocatore->dadiDifesa; j++)
             {
                 int def = rand() % 6;
@@ -1240,6 +1255,7 @@ static int combatti(Giocatore *pGiocatore, AbitanteDelleSegrete *pAbitante)
         system("clear");
     } while (pGiocatore->pVita > 0 && pAbitante->pVita > 0);
 
+    // Dealloco l'abitante
     if (pAbitante->pVita <= 0)
     {
         printf("\n\033[1;32mComplimenti! Hai sconfitto \033[1;31m%s\033[0m.\n", pAbitante->nome);
@@ -1349,9 +1365,9 @@ static AbitanteDelleSegrete *creaAbitanteSegrete(ZonaSegrete *zona)
     strcpy(abitante->nome, nomeAbitante[rand() % 15]);
 
     // Generazione dadi e pv in base al turno
-    int max = 10;
-    int range = nTurno * 2 + 1;
-    range = (range > max) ? max : (nTurno * 2 + 1);
+    int max = 12;                                   // Massimi valori
+    int range = nTurno * 2 + 1;                     // Range di generazione casuale per random
+    range = (range > max) ? max : (nTurno * 2 + 1); // Controllo che range non superi i valori massimi
     abitante->dadiAttacco = rand() % range + 1;
     abitante->dadiDifesa = rand() % range + 1;
     abitante->pVita = rand() % range + 1;
@@ -1365,7 +1381,6 @@ static void stampaAbitante(AbitanteDelleSegrete *pAbitante)
     printf("\033[1;31mAtk\033[1;0m: %d\n", pAbitante->dadiAttacco);
     printf("\033[1;36mDef\033[1;0m: %d\n", pAbitante->dadiDifesa);
     printf("\033[1;32mPunti Vita\033[1;0m: %d\n", pAbitante->pVita);
-    // printf("\033[1;33mZona\033[1;0m: %s\n", getTipoZona(pAbitante->posizione->tipoZona));
 }
 
 static void sconfittaAbitante(AbitanteDelleSegrete *pAbitante)
