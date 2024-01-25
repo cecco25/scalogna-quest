@@ -194,7 +194,7 @@ void terminaGioco()
     }
     cancellaMappa();
 
-    printf("\nGrazie per aver giocato a \033[1;33mScalogna-Quest\033[0m, alla prossima!\n");
+    printf("\nGrazie per aver giocato a \033[1;33mScalogna-Quest\033[0m, alla prossima!\n\n");
 }
 
 static void creaGiocatore(Giocatore *pGiocatore, int i)
@@ -483,6 +483,12 @@ static void inserimentoInPosizione(unsigned short posizione)
 
 static void cancellaZona()
 {
+    if (dimensioneLista() <= 0)
+    {
+        printf("\n\033[1;31mAttenzione!\033[1;0m Non ci sono zone da cancellare!\n");
+        return;
+    }
+
     unsigned short posizioneZona = 0;
     printf("Inserisci la posizione della zona da eliminare\n");
     printf("\033[92mScelta:\033[0m ");
